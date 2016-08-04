@@ -18,11 +18,13 @@
 - 用户可输入开始和结束（年月日，时），数据点数确定
 
 ## TestWindow
-- 下位机实例
-- 若测试则先关闭dataprocessor下位机实例和monitor timer
+- //下位机实例
+- //若测试则先关闭dataprocessor下位机实例和monitor timer
+- 
 
 
 - 手动测试：清除数据
+- manualregulator();
 - 自动测试
 
 ## ConfigWindow
@@ -46,9 +48,12 @@ public functions:
 - getAveragePower(int timelength unit: second)
 - getMinimalPower(int timelength unit: second)
 - slot for monitor //监视要不要调
+- slot for manual regulation
+- slot for auto regulation
+- 
 - stopMonitor()
 - beginMonitor()
-- 
+
 
 Signals：
 - 电表 error

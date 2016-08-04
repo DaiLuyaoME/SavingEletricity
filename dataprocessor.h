@@ -34,7 +34,7 @@ public slots:
 private:
     Database *database;
     Regulator *regulator;
-    Ammeter *ammeter;
+    Ammeter *ammeter;//电表实例
     QTimer *getDataTimer;//每秒发动一次
     QTimer *saveDataTimer;//默认每10秒发动一次
     QTimer *monitorTimer;//每10分钟发动一次
