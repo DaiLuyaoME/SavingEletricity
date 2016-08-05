@@ -94,3 +94,18 @@ structure Datapoint
 UI，database：wyh
 dataprocessor:LY
 电表下位机：DLY
+
+
+
+2016/08/04
+# 程序启动流程
+1、main
+2、UI实例
+3、UI实例中创建dataprocessor实例
+4、dataprocessor实例中创建database实例 ammete实例 regulator实例
+
+# 问题与缺陷：
+1、有些类没有析构函数
+2、database中没有报错机制
+3、settimerinterval() 这个函数是用来设置什么时间间隔的？
+4、计算Pa,Sh,Pt（见项目书）？？
