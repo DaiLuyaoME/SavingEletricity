@@ -123,20 +123,70 @@ QList<DataPoint> DataProcessor::dataSlicer(QTime begin, QTime end)
 */
 void DataProcessor::setTimeInterval(int interval, int timettype)
 {
-
+    switch (timettype) {
+    case 1:
+        GetDataTimeInterval = interval;
+        break;
+    case 2:
+        SaveDataTimeInterval = interval;
+        break;
+    case 3:
+        MoniterTimeInterval = interval;
+        break;
+    default:
+        break;
+    }
 }
 
 /*
-*计算当前10分钟内的平均功率，600个数据
-*返回一个浮点功率
+*timeLength:计算时间 单位：second
+*默认计算10分钟内的平均功率，600个数据
+*如果计算时间内的要求数据少于 realdtimedatabuffer 则使用当前记录数据
 */
-float DataProcessor::getAveragePower(int timeLength)
+void DataProcessor::getAveragePower(int timeLength)
 {
+    float tempaveragepower = 0.0;
+    int   counttime = 0;//计数个数
+    int   counter   = 0;//计数
 
+    if(realTimeDataBuffer.isEmpty())
+    {
+        emit actionError();
+    }
+    counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
+
+    for(i = counttime;i <= 0; i--)//计算总功率
+    {
+        TotalPower += realTimeDataBuffer.at(i);
+    }
+    AveragePower = TotalPower / counttime;//计算平均功率
+    OldAveragePower = AveragePower;
+    OldTotalPower = TotalPower;
+    TotalPower = 0;//总功率计数清零
 }
 
 
+/*
+*timeLength:计算时间 单位：second
+*如果计算时间内的要求数据少于 realdtimedatabuffer 则使用当前记录数据
+*/
 float DataProcessor::getMinPower(int timeLength)
 {
+    float tempminpower = 0.0;
+    int   counttime = 0;//计数个数
+    int   counter   = 0;//计数
 
+    if(realTimeDataBuffer.isEmpty())//操作限定在读取数据之后
+    {
+        emit actionError();
+    }
+    counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
+
+    tempminpower = realTimeDataBuffer.last();
+    for(i = counttime;i <= 0; i--)//找到最小功率
+    {
+        tempminpower = (tempminpower<realTimeDataBuffer.at(i)?tempminpower:realTimeDataBuffer.at(i));//寻找最小功率
+    }
+    MinMomentPower = tempminpower;
+    return tempminpower;
 }
