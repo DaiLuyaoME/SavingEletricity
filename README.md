@@ -18,11 +18,13 @@
 - 用户可输入开始和结束（年月日，时），数据点数确定
 
 ## TestWindow
-- 下位机实例
-- 若测试则先关闭dataprocessor下位机实例和monitor timer
+- //下位机实例
+- //若测试则先关闭dataprocessor下位机实例和monitor timer
+- 
 
 
 - 手动测试：清除数据
+- manualregulator();
 - 自动测试
 
 ## ConfigWindow
@@ -46,9 +48,12 @@ public functions:
 - getAveragePower(int timelength unit: second)
 - getMinimalPower(int timelength unit: second)
 - slot for monitor //监视要不要调
+- slot for manual regulation
+- slot for auto regulation
+- 
 - stopMonitor()
 - beginMonitor()
-- 
+
 
 Signals：
 - 电表 error
@@ -89,3 +94,28 @@ structure Datapoint
 UI，database：wyh
 dataprocessor:LY
 电表下位机：DLY
+
+
+
+2016/08/04
+# 程序启动流程
+1、main
+2、UI实例
+3、UI实例中创建dataprocessor实例
+4、dataprocessor实例中创建database实例 ammete实例 regulator实例
+
+# 问题与缺陷：
+1、有些类没有析构函数
+2、database中没有报错机制
+3、settimerinterval() 这个函数是用来设置什么时间间隔的？
+4、计算Pa,Sh,Pt（见项目书）？？
+
+
+
+2016/08/05
+# 发现问题
+1、计算平局功率、总做功、最小功率时，要考虑机器启动时间较短情况下，数据量不满足时间要求的情况。
+我的处理：
+增加 actionError() 这个signal应对操作不当的情况。
+
+  
