@@ -39,6 +39,11 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
 
 }
 
+DataProcessor::~DataProcessor()
+{
+
+}
+
 /*
 *通过电表ammeter读取数据
 */
@@ -46,13 +51,14 @@ void DataProcessor::getData()
 {
     int Isread;
     DataPoint tempdata;
-    Isread = ammeter->readLatestData();
-    if(Isread == ERROR)
-    {
-        emit ammeterError();//发送电表错误消息
-    }
-    else
-    {
+//    Isread = ammeter->readLatestData();
+
+//    if(Isread == ERROR)
+//    {
+//        emit ammeterError();//发送电表错误消息
+//    }
+//    else
+//    {
         tempdata = ammeter->getData();//读取数据
         if(realTimeDataBuffer.size()>=REALTIMEDATABUFFERCOUNT)//保留3600个数据
         {
@@ -64,7 +70,7 @@ void DataProcessor::getData()
             realTimeDataBuffer.push_back(tempdata);//队列处理
         }
         emit newRealTimeData();//发送数据读取消息
-    }
+//    }
 }
 
 /*
@@ -173,7 +179,7 @@ void DataProcessor::regulatorCount()
 {
     int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
     float tempminpowervoltage = getMinPowerVoltage(counttime);
-    regulator->sendVotageAtMinPower(tempminpowervoltage);
+    regulator->sendVoltageAtMinPower(tempminpowervoltage);
 }
 /*找到当前功率最低点*/
 float DataProcessor::getMinPowerVoltage(int timeLength)
