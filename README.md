@@ -48,7 +48,6 @@ public functions:
 - slot for monitor //监视要不要调
 - stopMonitor()
 - beginMonitor()
-- 
 
 Signals：
 - 电表 error
@@ -72,10 +71,11 @@ datapoint latestdata
 - int ack()
 
 # Database
-dataSlicer(time start, time end, QArrayList<datapoint>) from database get data and transform them into datapoint
-saveData(datapoint)
+- dataSlicer(time start, time end, QArrayList<datapoint>) from database get data and transform them into datapoint
+- saveData(datapoint)
 
 # DataStructure.h
+```C
 structure Datapoint
 {
     float va,vb,vc;
@@ -85,7 +85,7 @@ structure Datapoint
     float apa,apb,apc,aps;
     float pfa,pfb,pfc,pfs;
 }
-
+```
 UI，database：wyh
 dataprocessor:LY
 电表下位机：DLY
