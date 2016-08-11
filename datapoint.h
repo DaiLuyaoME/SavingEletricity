@@ -1,5 +1,6 @@
 #ifndef DATAPOINT_H
 #define DATAPOINT_H
+#define NUM_AMMETER_DATA 22
 typedef float datatype;
 struct DataPoint
 {
@@ -11,4 +12,12 @@ struct DataPoint
     datatype pfa,pfb,pfc,pfs;   //功率因素（power factor）
 };
 
+enum RegulatorInstructionType
+{
+    NoneRegulationType=0,
+    WaitForBegining,
+    WaitForEnding,
+    OpenPort
+
+};
 #endif // DATAPOINT_H
