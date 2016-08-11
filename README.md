@@ -48,7 +48,6 @@ public functions:
 - slot for monitor //监视要不要调
 - stopMonitor()
 - beginMonitor()
-- 
 
 Signals：
 - 电表 error
