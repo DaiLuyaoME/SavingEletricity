@@ -107,7 +107,7 @@ void Ammeter::parseData()
             qDebug()<<"read type is "<<m_readType<<endl;
             qDebug()<<"the number of bytes that have been read is "<<buffer.size()<<endl;
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray AL=buffer.mid(14,1);
             QByteArray AH=buffer.mid(15,1);
             datatype A=(minus33(AH.toHex()))*10+(minus33(AL.toHex()))*0.1;
@@ -138,7 +138,7 @@ void Ammeter::parseData()
         if(buffer.size()==BYTE_NUMBER_CURRENT)
         {
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray AL=buffer.mid(14,1);
             QByteArray AM=buffer.mid(15,1);
             QByteArray AH=buffer.mid(16,1);
@@ -170,7 +170,7 @@ void Ammeter::parseData()
         if(buffer.size()==BYTE_NUMBER_EFFECTIVE_POWER)
         {
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray SL=buffer.mid(14,1);
             QByteArray SM=buffer.mid(15,1);
             QByteArray SH=buffer.mid(16,1);
@@ -207,7 +207,7 @@ void Ammeter::parseData()
         if(buffer.size()==BYTE_NUMBER_REACTIVE_POWER)
         {
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray SL=buffer.mid(14,1);
             QByteArray SM=buffer.mid(15,1);
             QByteArray SH=buffer.mid(16,1);
@@ -244,7 +244,7 @@ void Ammeter::parseData()
         if(buffer.size()==BYTE_NUMBER_APPRENT_POWER)
         {
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray SL=buffer.mid(14,1);
             QByteArray SM=buffer.mid(15,1);
             QByteArray SH=buffer.mid(16,1);
@@ -281,7 +281,7 @@ void Ammeter::parseData()
         if(buffer.size()==BYTE_NUMBER_POWER_FACTOR)
         {
             timeout->stop();
-            failureCount==0;
+            failureCount=0;
             QByteArray SL=buffer.mid(14,1);
             QByteArray SH=buffer.mid(15,1);
             datatype S=(minus33(SH.toHex()))*0.1+(minus33(SL.toHex()))*0.001;
