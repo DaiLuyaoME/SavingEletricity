@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql printsupport
 QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     ammeter.cpp \
     dataprocessor.cpp \
     regulator.cpp \
-    database.cpp
+    database.cpp \
+    qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     datapoint.h \
@@ -33,7 +34,8 @@ HEADERS  += mainwindow.h \
     ammeter.h \
     dataprocessor.h \
     regulator.h \
-    database.h
+    database.h \
+    qcustomplot.h
 
 FORMS    += mainwindow.ui \
     realtimedatawindow.ui \
