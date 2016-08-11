@@ -27,7 +27,7 @@ void DataProcessor::stopMonitor()
 
 QList<DataPoint> DataProcessor::dataSlicer(QTime begin, QTime end)
 {
-
+    return *(new QList<DataPoint>);
 }
 
 void DataProcessor::setTimeInterval()
