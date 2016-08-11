@@ -12,3 +12,15 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    realTimeWin.show();
+    this->hide();
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    testWin.show();
+    this->hide();
+}

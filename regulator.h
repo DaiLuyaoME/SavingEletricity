@@ -16,7 +16,7 @@ class Regulator : public QObject
     Q_OBJECT
 public:
     explicit Regulator(QObject *parent = 0);
-    //    void sendVotageAtMinPower(datatype voltage);
+    void sendVoltageAtMinPower(datatype voltage);
     void beginRegulate();
     void closePort();
     void openPort();
