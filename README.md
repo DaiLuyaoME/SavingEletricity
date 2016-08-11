@@ -76,7 +76,7 @@ datapoint latestdata
 - saveData(datapoint)
 
 # DataStructure.h
-''C
+```C
 structure Datapoint
 {
     float va,vb,vc;
@@ -86,7 +86,7 @@ structure Datapoint
     float apa,apb,apc,aps;
     float pfa,pfb,pfc,pfs;
 }
-''
+```
 UI，database：wyh
 dataprocessor:LY
 电表下位机：DLY
