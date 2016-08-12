@@ -200,7 +200,7 @@ float DataProcessor::getMinPowerVoltage(int timeLength)
 }
 
 /*
- * 根据绘图所需点的个数来
+ *
 */
 QList<DataPoint> DataProcessor::dataSlicer(QTime begin, QTime end)
 {
