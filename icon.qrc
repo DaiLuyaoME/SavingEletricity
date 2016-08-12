@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/config.ico</file>
+        <file>icon/exit.ico</file>
+        <file>icon/history.ico</file>
+        <file>icon/realtime.ico</file>
+        <file>icon/test.ico</file>
+    </qresource>
+</RCC>

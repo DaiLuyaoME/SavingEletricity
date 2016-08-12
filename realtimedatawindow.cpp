@@ -10,6 +10,18 @@ RealTimeDataWindow::RealTimeDataWindow(QWidget *parent) :
     mode=VMODE;
     //connect(updateTimer,SIGNAL(timeout()),this,SLOT(addDataToPlot()));
     //updateTimer.start(1000);
+    const char plotnames[4]={'a','b','c','s'};
+    const int plotcolors[4]={Qt::red,Qt::blue,Qt::black,Qt::green};
+    for (int i=0;i<4;i++)
+    {
+        plots[i].addGraph();
+        ui->playLayout->addWidget((QWidget*)&plots[i]);
+        plots[i].graph(0)->setName(QString(plotnames[i]));
+        plots[i].legend->setVisible(true);
+        plots[i].graph(0)->setPen(QPen(plotcolors[i]));
+    }
+
+
     replot(mode,range);
 }
 
@@ -87,29 +99,27 @@ void RealTimeDataWindow::trimdata(int range)
 
 void RealTimeDataWindow::replot(int mode, int range)
 {
-    ui->plot->clearGraphs();
-    ui->plot->addGraph();
-    ui->plot->addGraph();
-    ui->plot->addGraph();
-
-    ui->plot->graph(0)->setName(QString("a"));
-    ui->plot->graph(1)->setName(QString("b"));
-    ui->plot->graph(2)->setName(QString("c"));
-
-    ui->plot->graph(0)->setPen(QPen(Qt::red));
-    ui->plot->graph(1)->setPen(QPen(Qt::blue));
-    ui->plot->graph(2)->setPen(QPen(Qt::green));
-
-    if (mode!=VMODE && mode!=IMODE)
+    for (int i=0;i<3;i++)
     {
-        ui->plot->addGraph();
-        ui->plot->graph(3)->setPen(QPen(Qt::black));
-        ui->plot->graph(3)->setName(QString("s"));
+        plots[i].graph(0)->clearData();
+        plots[i].xAxis->setRange(0,range);
     }
 
-    ui->plot->legend->setVisible(true);
-    ui->plot->xAxis->setRange(0,range);
-    ui->plot->rescaleAxes(true);
+    if (mode==VMODE || mode==IMODE)
+    {
+        ui->playLayout->removeWidget(&plots[3]);
+        plots[3].hide();
+    }
+    else
+    {
+        if (ui->playLayout->count()==3)
+        {
+            ui->playLayout->addWidget(&plots[3]);
+            plots[3].show();
+        }
+        plots[3].graph(0)->clearData();
+        plots[3].xAxis->setRange(0,range);
+    }
 
     removeIdx=0;
     int i;
@@ -119,47 +129,48 @@ void RealTimeDataWindow::replot(int mode, int range)
             break;
         if (mode==VMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].va);
-            ui->plot->graph(1)->addData(i,datapoints[i].vb);
-            ui->plot->graph(2)->addData(i,datapoints[i].vc);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].va);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].vb);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].vc);
         }
         else if (mode==IMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].ia);
-            ui->plot->graph(1)->addData(i,datapoints[i].ib);
-            ui->plot->graph(2)->addData(i,datapoints[i].ic);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].ia);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].ib);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].ic);
         }
         else if (mode==EPMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].epa);
-            ui->plot->graph(1)->addData(i,datapoints[i].epb);
-            ui->plot->graph(2)->addData(i,datapoints[i].epc);
-            ui->plot->graph(3)->addData(i,datapoints[i].eps);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].epa);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].epb);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].epc);
+            plots[3].graph(0)->addData(addIdx,datapoints[i].eps);
         }
         else if (mode==RPMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].rpa);
-            ui->plot->graph(1)->addData(i,datapoints[i].rpb);
-            ui->plot->graph(2)->addData(i,datapoints[i].rpc);
-            ui->plot->graph(3)->addData(i,datapoints[i].rps);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].rpa);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].rpb);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].rpc);
+            plots[3].graph(0)->addData(addIdx,datapoints[i].rps);
         }
         else if (mode==APMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].apa);
-            ui->plot->graph(1)->addData(i,datapoints[i].apb);
-            ui->plot->graph(2)->addData(i,datapoints[i].apc);
-            ui->plot->graph(3)->addData(i,datapoints[i].aps);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].apa);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].apb);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].apc);
+            plots[3].graph(0)->addData(addIdx,datapoints[i].aps);
         }
         else if (mode==PFMODE)
         {
-            ui->plot->graph(0)->addData(i,datapoints[i].pfa);
-            ui->plot->graph(1)->addData(i,datapoints[i].pfb);
-            ui->plot->graph(2)->addData(i,datapoints[i].pfc);
-            ui->plot->graph(3)->addData(i,datapoints[i].pfs);
+            plots[0].graph(0)->addData(addIdx,datapoints[i].pfa);
+            plots[1].graph(0)->addData(addIdx,datapoints[i].pfb);
+            plots[2].graph(0)->addData(addIdx,datapoints[i].pfc);
+            plots[3].graph(0)->addData(addIdx,datapoints[i].pfs);
         }
     }
     addIdx=i;
-    ui->plot->replot();
+    for (int i=0;i<4;i++)
+        plots[i].replot();
 }
 
 void RealTimeDataWindow::on_horizontalSlider_sliderReleased()
@@ -188,53 +199,52 @@ void RealTimeDataWindow::addDataToPlot()
     if (datapoints.length()>range)
     {
         datapoints.pop_front();
-        ui->plot->graph(0)->data()->remove(removeIdx);
-        ui->plot->graph(1)->data()->remove(removeIdx);
-        ui->plot->graph(2)->data()->remove(removeIdx);
+        for (int i=0;i<3;i++)
+            plots[i].graph(0)->data()->remove(removeIdx);
         if (mode!=VMODE && mode!=IMODE)
-            ui->plot->graph(3)->data()->remove(removeIdx);
+            plots[3].graph(0)->data()->remove(removeIdx);
         removeIdx++;
     }
     addIdx++;
     if (mode==VMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.va);
-        ui->plot->graph(1)->addData(addIdx,newdata.vb);
-        ui->plot->graph(2)->addData(addIdx,newdata.vc);
+        plots[0].graph(0)->addData(addIdx,newdata.va);
+        plots[1].graph(0)->addData(addIdx,newdata.vb);
+        plots[2].graph(0)->addData(addIdx,newdata.vc);
     }
     else if (mode==IMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.ia);
-        ui->plot->graph(1)->addData(addIdx,newdata.ib);
-        ui->plot->graph(2)->addData(addIdx,newdata.ic);
+        plots[0].graph(0)->addData(addIdx,newdata.ia);
+        plots[1].graph(0)->addData(addIdx,newdata.ib);
+        plots[2].graph(0)->addData(addIdx,newdata.ic);
     }
     else if (mode==EPMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.epa);
-        ui->plot->graph(1)->addData(addIdx,newdata.epb);
-        ui->plot->graph(2)->addData(addIdx,newdata.epc);
-        ui->plot->graph(3)->addData(addIdx,newdata.eps);
+        plots[0].graph(0)->addData(addIdx,newdata.epa);
+        plots[1].graph(0)->addData(addIdx,newdata.epb);
+        plots[2].graph(0)->addData(addIdx,newdata.epc);
+        plots[3].graph(0)->addData(addIdx,newdata.eps);
     }
     else if (mode==RPMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.rpa);
-        ui->plot->graph(1)->addData(addIdx,newdata.rpb);
-        ui->plot->graph(2)->addData(addIdx,newdata.rpc);
-        ui->plot->graph(3)->addData(addIdx,newdata.rps);
+        plots[0].graph(0)->addData(addIdx,newdata.rpa);
+        plots[1].graph(0)->addData(addIdx,newdata.rpb);
+        plots[2].graph(0)->addData(addIdx,newdata.rpc);
+        plots[3].graph(0)->addData(addIdx,newdata.rps);
     }
     else if (mode==APMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.apa);
-        ui->plot->graph(1)->addData(addIdx,newdata.apb);
-        ui->plot->graph(2)->addData(addIdx,newdata.apc);
-        ui->plot->graph(3)->addData(addIdx,newdata.aps);
+        plots[0].graph(0)->addData(addIdx,newdata.apa);
+        plots[1].graph(0)->addData(addIdx,newdata.apb);
+        plots[2].graph(0)->addData(addIdx,newdata.apc);
+        plots[3].graph(0)->addData(addIdx,newdata.aps);
     }
     else if (mode==PFMODE)
     {
-        ui->plot->graph(0)->addData(addIdx,newdata.pfa);
-        ui->plot->graph(1)->addData(addIdx,newdata.pfb);
-        ui->plot->graph(2)->addData(addIdx,newdata.pfc);
-        ui->plot->graph(3)->addData(addIdx,newdata.pfs);
+        plots[0].graph(0)->addData(addIdx,newdata.pfa);
+        plots[1].graph(0)->addData(addIdx,newdata.pfb);
+        plots[2].graph(0)->addData(addIdx,newdata.pfc);
+        plots[3].graph(0)->addData(addIdx,newdata.pfs);
     }
 
 }
