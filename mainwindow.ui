@@ -38,8 +38,8 @@
     <string>实时数据绘制</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/realtime.ico</normaloff>icon/realtime.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/realtime.ico</normaloff>:/icon/realtime.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -64,8 +64,8 @@
     <string>历史数据绘制</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/history.ico</normaloff>icon/history.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/history.ico</normaloff>:/icon/history.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -87,8 +87,8 @@
     <string>节电测试</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/test.ico</normaloff>icon/test.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/test.ico</normaloff>:/icon/test.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -110,8 +110,8 @@
     <string>系统设置</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/config.ico</normaloff>icon/config.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/config.ico</normaloff>:/icon/config.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -136,8 +136,8 @@
     <string/>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/exit.ico</normaloff>icon/exit.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/exit.ico</normaloff>:/icon/exit.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -160,6 +160,8 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

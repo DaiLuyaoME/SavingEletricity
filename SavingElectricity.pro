@@ -44,4 +44,4 @@ FORMS    += mainwindow.ui \
     configwindow.ui
 
 RESOURCES += \
-    resource.qrc
+    icon.qrc
