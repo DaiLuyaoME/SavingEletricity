@@ -42,3 +42,6 @@ FORMS    += mainwindow.ui \
     historydatawindow.ui \
     testwindow.ui \
     configwindow.ui
+
+RESOURCES += \
+    resource.qrc
