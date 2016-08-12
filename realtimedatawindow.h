@@ -40,6 +40,7 @@ private:
     DataProcessor *dataPro;
     QList<DataPoint> datapoints;
     QTimer updateTimer;
+    QCustomPlot plots[4];
 
     void replot(int mode,int range);
     void trimdata(int range);
