@@ -71,6 +71,7 @@ void Ammeter::initConnections()
     connect(this,&Ammeter::reactivePowerDataGot,this,&Ammeter::getApparentPower);
     connect(this,&Ammeter::apparentPowerDataGot,this,&Ammeter::getPowerFactor);
     connect(this,&Ammeter::powerFactorDataGot,this,&Ammeter::startReadTimer);
+    connect(this,&Ammeter::powerFactorDataGot,this,&Ammeter::getDataOver);
 }
 
 void Ammeter::initData()

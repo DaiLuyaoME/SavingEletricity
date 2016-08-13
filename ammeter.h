@@ -53,6 +53,7 @@ signals:
     void reactivePowerDataGot();
     void apparentPowerDataGot();
     void powerFactorDataGot();
+    void getDataOver();
     void ammeterError();
 
 public slots:
