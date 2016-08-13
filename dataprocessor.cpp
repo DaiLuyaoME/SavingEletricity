@@ -178,14 +178,14 @@ void DataProcessor::regulatorAction()
 void DataProcessor::regulatorCount()
 {
     int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
-    float tempminpowervoltage = getMinPowerVoltage(counttime);
+    DataPoint tempminpowerdatapoint = getMinPowerdatapoint(counttime);
     regulator->sendVoltageAtMinPower(tempminpowervoltage);
 }
 /*找到当前功率最低点*/
-float DataProcessor::getMinPowerVoltage(int timeLength)
+DataPoint DataProcessor::getMinPowerdatapoint(int timeLength)
 {
     float tempminpower = 0.0;
-    float tempminpowervoltage = 0.0;
+    DataPoint tempminpowerdatapoint;
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
 
@@ -200,9 +200,9 @@ float DataProcessor::getMinPowerVoltage(int timeLength)
     for(counter = counttime;counter <= 0; counter--)//找到最小功率
     {
         tempminpower = (tempminpower<realTimeDataBuffer.at(counter).eps?tempminpower:realTimeDataBuffer.at(counter).eps);//寻找最小功率
-        tempminpowervoltage = realTimeDataBuffer.at(counter).va;//??返回那个电压值
+        tempminpowerdatapoint = realTimeDataBuffer.at(counter);//??返回那个电压值
     }
-    return tempminpowervoltage;
+    return tempminpowerdatapoint;
 }
 
 /*
