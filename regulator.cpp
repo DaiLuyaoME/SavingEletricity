@@ -18,7 +18,7 @@ Regulator::Regulator(QObject *parent) : QObject(parent)
 
 }
 
-void Regulator::sendVoltageAtMinPower(datatype voltage)
+void Regulator::sendVoltageAtMinPower(DataPoint voltage)
 {
 
 }
