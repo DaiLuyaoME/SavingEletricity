@@ -24,8 +24,8 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
     SaveDataTimeInterval  = SAVEDATATIMEDEFALT;
     MonitorTimeInterval   = MONITERTIMEDEFALT;
     /*读取数据*/
-	QObject::connect(getDataTimer,SIGNAL(timeout()),this,SLOT(getData()));
-    getDataTimer->start(GetDataTimeInterval*1000);//默认1s一次
+    QObject::connect(ammeter,SIGNAL(getDataOver()),this,SLOT(getData()));
+    QObject::connect(ammeter,SIGNAL(ammeterError()),this,SLOT(ammeterGetDataError()));
     /*存储数据*/
     QObject::connect(saveDataTimer,SIGNAL(timeout()),this,SLOT(saveData()));
     saveDataTimer->start(SaveDataTimeInterval*1000);//默认10s一次
@@ -33,32 +33,23 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
     QObject::connect(monitorTimer,SIGNAL(timeout()),this,SLOT(monitorAction()));
     monitorTimer->start(MonitorTimeInterval);//默认600s一次
    /*regulator 回传电压值*/
+    QObject::connect(regulator,SIGNAL(regulationBegun()),this,SLOT(regulatorStart()));
     QObject::connect(regulator,SIGNAL(regulationOver()),this,SLOT(regulatorCount()));
+    QObject::connect(regulator,SIGNAL(regulatorError(RegulatorInstructionType)),this,SLOT(regulatorActionError()));
 
 
 
 }
-
 DataProcessor::~DataProcessor()
 {
 
 }
-
 /*
 *通过电表ammeter读取数据
 */
 void DataProcessor::getData()
 {
-    int Isread;
     DataPoint tempdata;
-//    Isread = ammeter->readLatestData();
-
-//    if(Isread == ERROR)
-//    {
-//        emit ammeterError();//发送电表错误消息
-//    }
-//    else
-//    {
         tempdata = ammeter->getData();//读取数据
         if(realTimeDataBuffer.size()>=REALTIMEDATABUFFERCOUNT)//保留3600个数据
         {
@@ -70,7 +61,15 @@ void DataProcessor::getData()
             realTimeDataBuffer.push_back(tempdata);//队列处理
         }
         emit newRealTimeData();//发送数据读取消息
-//    }
+}
+/*
+ * 电表读数失败
+*/
+void DataProcessor::ammeterGetDataError()
+{
+    saveDataTimer->stop();
+    monitorTimer->stop();
+    emit ammeterError();
 }
 
 /*
@@ -81,7 +80,9 @@ DataPoint DataProcessor::getLastData()
 {
     return realTimeDataBuffer.last();
 }
-
+/*
+ * 获得最新的功率数据
+*/
 float DataProcessor::getLastPower()
 {
     return realTimeDataBuffer.last().eps;
@@ -89,14 +90,29 @@ float DataProcessor::getLastPower()
 /*
 *向数据库中写入数据
 */
-void DataProcessor::saveData()
+int DataProcessor::saveData()
 {
     bool Isnodata;
+    int dbreturn;
     Isnodata = realTimeDataBuffer.isEmpty();
-    if(!Isnodata)//没有数据存储
+    if(Isnodata)//没有数据存储
     {
-        database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
+        emit actionError();
+        return -1;
     }
+    else
+    {
+        /*!!!wuyuanhao会把saveData()改成回传int新函数*/
+        dbreturn = database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
+        if(dbreturn == ERROR)//数据库存储错误
+        {
+            saveDataTimer->stop();
+            emit dataBaseError();
+            return -1;
+        }
+        return 0;
+    }
+
 }
 /*
  * 固定时间间隔进行监控，满足一定条件触regulator调节
@@ -130,15 +146,13 @@ float DataProcessor::getAveragePower(int timeLength)
         return 0.0;
     }
     counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
-    for(counter = counttime;counter <= 0; counter--)//计算总功率
+    for(counter = (realTimeDataBuffer.size()-1);counter <= (realTimeDataBuffer.size()-counttime); counter--)//计算总功率
     {
         temptotalpower += realTimeDataBuffer.at(counter).eps;
     }
     tempaveragepower = temptotalpower / (float)counttime;
     return tempaveragepower;
 }
-
-
 /*
 *timeLength:计算时间 单位：second
 *如果计算时间内的要求数据少于 realdtimedatabuffer 则使用当前记录数据
@@ -155,9 +169,8 @@ float DataProcessor::getMinPower(int timeLength)
         return 0.0;
     }
     counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
-
     tempminpower = realTimeDataBuffer.last().eps;
-    for(counter = counttime;counter <= 0; counter--)//找到最小功率
+    for(counter = (realTimeDataBuffer.size()-1);counter <= (realTimeDataBuffer.size()-counttime); counter--)//找到最小功率
     {
         tempminpower = (tempminpower<realTimeDataBuffer.at(counter).eps?tempminpower:realTimeDataBuffer.at(counter).eps);//寻找最小功率
     }
@@ -168,51 +181,75 @@ float DataProcessor::getMinPower(int timeLength)
 */
 void DataProcessor::regulatorAction()
 {
-    RegulatorTime->start();//开始计时
     regulator->beginRegulate();
 }
 /*
+ * 调节函数回传开始动作 开始计时
+*/
+void DataProcessor::regulatorStart()
+{
+    RegulatorTime->restart();
+}
+/*
+ * 下位机错误信号
+*/
+void DataProcessor::regulatorActionError()
+{
+    RegulatorTime->elapsed();
+    emit regulatorError();
+}
+/*
  * 调节函数结束
- * 给下位机返回调控时间内最低功率点的电压值
+ * 给下位机返回调控时间内最低功率点的数据点
  */
 void DataProcessor::regulatorCount()
 {
     int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
-    float tempminpowervoltage = getMinPowerVoltage(counttime);
-    regulator->sendVoltageAtMinPower(tempminpowervoltage);
+    DataPoint tempminpowerdatapoint = getMinPowerDataPoint(counttime);
+    regulator->sendVoltageAtMinPower(tempminpowerdatapoint);
 }
 /*找到当前功率最低点*/
-float DataProcessor::getMinPowerVoltage(int timeLength)
+DataPoint DataProcessor::getMinPowerDataPoint(int timeLength)
 {
     float tempminpower = 0.0;
-    float tempminpowervoltage = 0.0;
+    DataPoint tempminpowerdatapoint;
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
-
-    if(realTimeDataBuffer.isEmpty())//操作限定在读取数据之后
-    {
-        emit actionError();
-        return 0.0;
-    }
     counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
-
     tempminpower = realTimeDataBuffer.last().eps;
-    for(counter = counttime;counter <= 0; counter--)//找到最小功率
+    for(counter = (realTimeDataBuffer.size()-1);counter <= (realTimeDataBuffer.size()-counttime); counter--)//找到最小功率
     {
         tempminpower = (tempminpower<realTimeDataBuffer.at(counter).eps?tempminpower:realTimeDataBuffer.at(counter).eps);//寻找最小功率
-        tempminpowervoltage = realTimeDataBuffer.at(counter).va;//??返回那个电压值
+        tempminpowerdatapoint = realTimeDataBuffer.at(counter);//??返回那个电压值
     }
-    return tempminpowervoltage;
+    float MP = realTimeDataBuffer.at(realTimeDataBuffer.size()-counttime).eps;
+    float MS = realTimeDataBuffer.last().eps;
+    SavingRate = (MP-MS)/MP;
+    emit regulatorFinish();//调节完成
+    return tempminpowerdatapoint;
+}
+float DataProcessor::getSavingRate()
+{
+    return SavingRate;
 }
 
 /*
- * 根据绘图所需点的个数来
+ * 历史数据切片
 */
-QList<DataPoint> DataProcessor::dataSlicer(QTime begin, QTime end)
+QList<DataPoint> DataProcessor::dataSlicer(QDateTime begin, QDateTime end, int dataamount)
 {
-    return *(new QList<DataPoint>);
+    QList<DataPoint> historyorigindatabuffer;
+    QList<DataPoint> historydatabuffer;
+    database->dataSlicer(begin,end,historyorigindatabuffer);
+    int origindataamount = historyorigindatabuffer.size();
+    int datainterval = origindataamount / dataamount;
+    for(int i = 0;i <= origindataamount;)
+    {
+        historydatabuffer.push_back(historyorigindatabuffer.at(i));
+        i += datainterval;
+    }
+    return historydatabuffer;
 }
-
 /*
 *设置时间间隔 单位：S
 * timetype:
@@ -250,3 +287,7 @@ void DataProcessor::setProportion(float proportion)
         emit actionError();
     }
 }
+
+
+
+
