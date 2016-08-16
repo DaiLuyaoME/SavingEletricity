@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    historyWin.setParentWin(this);
 }
 
 MainWindow::~MainWindow()
@@ -22,5 +23,11 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::on_pushButton_3_clicked()
 {
     testWin.show();
+    this->hide();
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    historyWin.show();
     this->hide();
 }

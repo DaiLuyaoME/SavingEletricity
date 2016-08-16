@@ -23,7 +23,7 @@ public:
     void setTimeInterval(int interval,int timettype);//设置不同时间间隔
     void setProportion(float proportion);//设置调节限位比例
     DataPoint getMinPowerDataPoint(int timeLength);//搜索最小功率的数据点
-    QList<DataPoint> dataSlicer(QDateTime begin,QDateTime end,int dataamount);
+    void dataSlicer(QDateTime begin,QDateTime end,QList<DataPoint> &datapoints, int dataamount);
     float getSavingRate();//结算节电率
 signals:
     void ammeterError();//电表故障
