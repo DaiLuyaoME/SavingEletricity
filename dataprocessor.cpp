@@ -236,19 +236,17 @@ float DataProcessor::getSavingRate()
 /*
  * 历史数据切片
 */
-QList<DataPoint> DataProcessor::dataSlicer(QDateTime begin, QDateTime end, int dataamount)
+void DataProcessor::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &datapoints, int dataamount)
 {
     QList<DataPoint> historyorigindatabuffer;
-    QList<DataPoint> historydatabuffer;
     database->dataSlicer(begin,end,historyorigindatabuffer);
     int origindataamount = historyorigindatabuffer.size();
     int datainterval = origindataamount / dataamount;
     for(int i = 0;i <= origindataamount;)
     {
-        historydatabuffer.push_back(historyorigindatabuffer.at(i));
+        datapoints.push_back(historyorigindatabuffer.at(i));
         i += datainterval;
     }
-    return historydatabuffer;
 }
 /*
 *设置时间间隔 单位：S
