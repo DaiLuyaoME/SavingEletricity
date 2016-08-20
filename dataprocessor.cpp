@@ -102,15 +102,14 @@ int DataProcessor::saveData()
     }
     else
     {
-        /*!!!wuyuanhao会把saveData()改成回传int新函数*/
-//        dbreturn = database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
-//        if(dbreturn == ERROR)//数据库存储错误
-//        {
-//            saveDataTimer->stop();
-//            emit dataBaseError();
-//            return -1;
-//        }
-          database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
+        dbreturn = database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
+        if(dbreturn == ERROR)//数据库存储错误
+        {
+            saveDataTimer->stop();
+            emit dataBaseError();
+            return -1;
+        }
+//          database->saveData(realTimeDataBuffer.last());//存储当前读取的最新数据
         return 0;
     }
 
