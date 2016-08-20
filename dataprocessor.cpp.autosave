@@ -3,7 +3,7 @@
 #define REALTIMEDATABUFFERCOUNT 3600//realTimeDataBuffer 数据个数
 #define GETDATATIMEDEFAULT      1//默认读取数据间隔 单位：second
 #define SAVEDATATIMEDEFALT      10//默认存储数据间隔 单位：second
-#define MONITERTIMEDEFALT       10//默认监控计算间隔 单位：second
+#define MONITERTIMEDEFALT       600//默认监控计算间隔 单位：second
 #define ERROR                   -1//报错回传参数
 
 DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
