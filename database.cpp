@@ -28,7 +28,7 @@ bool Database::createTable()
                "pfa FLOAT, pfb FLPAT, pfc FLOAT, pfs FLOAT)");
 }
 
-void Database::saveData(DataPoint dataToSave)
+bool Database::saveData(DataPoint dataToSave)
 {
     QSqlQuery query;
     uint datetime=QDateTime::currentDateTime().toTime_t();
@@ -70,7 +70,7 @@ void Database::saveData(DataPoint dataToSave)
     query.bindValue(":pfc",dataToSave.pfc);
     query.bindValue(":pfs",dataToSave.pfs);
 
-    query.exec();
+    return query.exec();
 }
 
 void Database::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &slicedData)

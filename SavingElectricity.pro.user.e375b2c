@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<!-- Written by QtCreator 4.0.2, 2016-08-17T17:00:43. -->
-=======
-<!-- Written by QtCreator 3.4.2, 2016-08-16T22:04:18. -->
->>>>>>> origin/wuyuanhao
-=======
-<!-- Written by QtCreator 4.0.2, 2016-08-20T18:48:30. -->
->>>>>>> origin/devluoyang0813
+<!-- Written by QtCreator 4.0.2, 2016-08-16T23:16:27. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -300,7 +292,7 @@
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">SavingElectricity.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">F:/SavingAemeter/build-SavingElectricity-Desktop_Qt_5_7_0_MinGW_32bit-Debug</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
