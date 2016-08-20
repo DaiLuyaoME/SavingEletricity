@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     dataprocessor.cpp \
     regulator.cpp \
     database.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    monitor.cpp
 
 HEADERS  += mainwindow.h \
     datapoint.h \
@@ -35,7 +36,8 @@ HEADERS  += mainwindow.h \
     dataprocessor.h \
     regulator.h \
     database.h \
-    qcustomplot.h
+    qcustomplot.h \
+    monitor.h
 
 FORMS    += mainwindow.ui \
     realtimedatawindow.ui \
