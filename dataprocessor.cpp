@@ -93,7 +93,7 @@ float DataProcessor::getLastPower()
 int DataProcessor::saveData()
 {
     bool Isnodata;
-    int dbreturn;
+    bool dbreturn;
     Isnodata = realTimeDataBuffer.isEmpty();
     if(Isnodata)//没有数据存储
     {
