@@ -34,7 +34,7 @@ private:
 signals:
 
 public slots:
-    void saveData(DataPoint dataToSave);
+    bool saveData(DataPoint dataToSave);
     void dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &slicedData);
 };
 
