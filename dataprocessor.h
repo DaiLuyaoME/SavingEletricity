@@ -25,7 +25,7 @@ public:
     DataPoint getMinPowerDataPoint(int timeLength);//搜索最小功率的数据点
     void dataSlicer(QDateTime begin,QDateTime end,QList<DataPoint> &datapoints, int dataamount);
     float getSavingRate();//结算节电率
-    void rewritePowerMessage(float *ap, float *tp, float *up);//average total up
+    void rewritePowerMessage(float *ap, float *tp, float *up, int timeLength);//average total up
 signals:
     void ammeterError();//电表故障
     void dataBaseError();//数据库故障
@@ -38,7 +38,7 @@ public slots:
 private slots:
     void getData();//UI通过dataprocessor获得数据
     void ammeterGetDataError();//电表读数错误
-    int saveData();//将数据存储到database
+    bool saveData();//将数据存储到database
     void monitorAction();//每隔一段时间进行监控操作
     void regulatorCount();//计算间隔时间内的数据
     void regulatorStart();//下位机动作后开始计时
