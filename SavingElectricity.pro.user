@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<!-- Written by QtCreator 4.0.2, 2016-08-17T17:00:43. -->
-=======
-<!-- Written by QtCreator 3.4.2, 2016-08-16T22:04:18. -->
->>>>>>> origin/wuyuanhao
-=======
-<<<<<<< HEAD
-<!-- Written by QtCreator 3.4.2, 2016-08-20T16:41:08. -->
->>>>>>> dc8d0578046b082313902fe0d9e21f86eed53d57
-=======
-<!-- Written by QtCreator 4.0.2, 2016-08-20T18:48:30. -->
->>>>>>> origin/devluoyang0813
->>>>>>> feature
+<!-- Written by QtCreator 4.0.2, 2016-08-20T22:00:40. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -305,14 +292,7 @@
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">SavingElectricity.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
-<<<<<<< HEAD
-<<<<<<< HEAD
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">F:/SavingAemeter/build-SavingElectricity-Desktop_Qt_5_7_0_MinGW_32bit-Debug</value>
-=======
->>>>>>> dc8d0578046b082313902fe0d9e21f86eed53d57
-=======
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">F:/SavingAemeter/build-SavingElectricity-Desktop_Qt_5_7_0_MinGW_32bit-Debug</value>
->>>>>>> feature
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
