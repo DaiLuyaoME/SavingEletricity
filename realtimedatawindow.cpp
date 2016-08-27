@@ -1,15 +1,14 @@
 #include "realtimedatawindow.h"
 #include "ui_realtimedatawindow.h"
 
-RealTimeDataWindow::RealTimeDataWindow(QWidget *parent) :
+RealTimeDataWindow::RealTimeDataWindow(QWidget *parent,DataProcessor *processor) :
     QWidget(parent),
-    ui(new Ui::RealTimeDataWindow)
+    ui(new Ui::RealTimeDataWindow),dataPro(processor)
 {
     ui->setupUi(this);
     range=60;
     mode=VMODE;
-    //connect(updateTimer,SIGNAL(timeout()),this,SLOT(addDataToPlot()));
-    //updateTimer.start(1000);
+    connect(dataPro,&DataProcessor::newRealTimeData,this,&RealTimeDataWindow::addDataToPlot);
     const char plotnames[4]={'a','b','c','s'};
     const int plotcolors[4]={Qt::red,Qt::blue,Qt::black,Qt::green};
     for (int i=0;i<4;i++)
@@ -20,8 +19,6 @@ RealTimeDataWindow::RealTimeDataWindow(QWidget *parent) :
         plots[i].legend->setVisible(true);
         plots[i].graph(0)->setPen(QPen(plotcolors[i]));
     }
-
-
     replot(mode,range);
 }
 
@@ -123,7 +120,7 @@ void RealTimeDataWindow::replot(int mode, int range)
 
     removeIdx=0;
     int i;
-    for (i=0;i<range;i++)
+    for (i=0;i<datapoints.length();i++)
     {
         if (i>=datapoints.length())
             break;
@@ -194,6 +191,8 @@ void RealTimeDataWindow::on_horizontalSlider_sliderReleased()
 void RealTimeDataWindow::addDataToPlot()
 {
     DataPoint newdata;  //read data from dataprocess
+    newdata=dataPro->getLastData();
+    qDebug()<<"window get data"<<newdata.apa<<endl;
 
     datapoints.append(newdata);
     if (datapoints.length()>range)

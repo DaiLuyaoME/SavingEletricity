@@ -451,6 +451,7 @@ Ammeter::Ammeter(QObject *parent) : QObject(parent)
 //    initPort();
 //    initInstruction();
     // timeout=new QTimer(this);
+    initConnections();
     readTimer=new QTimer(this);
     // connect(timeout,&QTimer::timeout,this,&Ammeter::handleTimeOut);
     connect(readTimer,&QTimer::timeout,this,&Ammeter::getVoltage);
@@ -542,6 +543,7 @@ void Ammeter::getVoltage()
     latestData.vb=random(210,230);
     latestData.vc=random(210,230);
     qDebug()<<"votage data got"<<endl;
+    qDebug()<<"Phase A is "<<latestData.va<<endl;
     emit voltageDataGot();
 
 }

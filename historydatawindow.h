@@ -22,8 +22,8 @@ class HistoryDataWindow : public QWidget
 
 public:
     explicit HistoryDataWindow(QWidget *parent = 0);
-    ~HistoryDataWindow();
     void setParentWin(QWidget* p);
+    ~HistoryDataWindow();
 
 
 private slots:
@@ -47,6 +47,7 @@ private:
     QWidget* parentWin;
 
     void replot(int mode,int range);
+
 };
 
 #endif // HISTORYDATAWINDOW_H

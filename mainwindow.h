@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    RealTimeDataWindow realTimeWin;
+    RealTimeDataWindow* realTimeWin;
     HistoryDataWindow historyWin;
     ConfigWindow configWin;
     TestWindow testWin;

@@ -21,8 +21,9 @@ class RealTimeDataWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit RealTimeDataWindow(QWidget *parent = 0);
+    explicit RealTimeDataWindow(QWidget *parent = 0, DataProcessor *processor=0);
     ~RealTimeDataWindow();
+    void setDataProcessor(DataProcessor * processor);
 
 private slots:
 
@@ -39,12 +40,13 @@ private:
     Ui::RealTimeDataWindow *ui;
     DataProcessor *dataPro;
     QList<DataPoint> datapoints;
-    QTimer updateTimer;
+    QTimer* updateTimer;
     QCustomPlot plots[4];
 
     void replot(int mode,int range);
     void trimdata(int range);
     void addDataToPlot();
+    void setParentWin(QWidget* p);
 };
 
 #endif // REALTIMEDATAWINDOW_H
