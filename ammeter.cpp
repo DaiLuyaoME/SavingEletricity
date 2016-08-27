@@ -1,4 +1,6 @@
 #include "ammeter.h"
+#include <ctime>
+#include <cstdlib>
 #define BYTE_NUMBER_VOLTAGE 22
 #define BYTE_NUMBER_CURRENT 25
 #define BYTE_NUMBER_EFFECTIVE_POWER 28
@@ -6,10 +8,13 @@
 #define BYTE_NUMBER_APPRENT_POWER 28
 #define BYTE_NUMBER_POWER_FACTOR 24
 #define MAX_FAILURE_COUNT 15
+#define SIMULATION
+#ifndef SIMULATION
 Ammeter::Ammeter(QObject *parent) : QObject(parent)
 {
     initPort();
     initInstruction();
+    initConnections();
     timeout=new QTimer(this);
     readTimer=new QTimer(this);
     connect(timeout,&QTimer::timeout,this,&Ammeter::handleTimeOut);
@@ -434,3 +439,174 @@ void Ammeter::startReadTimer()
     readTimer->start(1000);
 
 }
+
+#else
+double random(double start, double end)
+{
+    return start + (end - start)*rand()/(RAND_MAX);
+}
+Ammeter::Ammeter(QObject *parent) : QObject(parent)
+{
+    qDebug()<<"ammeter constructed"<<endl;
+    srand(unsigned(time(0)));
+//    initPort();
+//    initInstruction();
+    // timeout=new QTimer(this);
+    initConnections();
+    readTimer=new QTimer(this);
+    // connect(timeout,&QTimer::timeout,this,&Ammeter::handleTimeOut);
+    connect(readTimer,&QTimer::timeout,this,&Ammeter::getVoltage);
+    startReadTimer();
+}
+
+DataPoint Ammeter::getData()
+{
+    return latestData;
+}
+
+void Ammeter::initPort()
+{
+
+}
+
+void Ammeter::initInstruction()
+{
+    m_readType=NoneType;
+    m_instruction.voltageInstruction=QString("68aaaaaaaaaaaa68110433323435af16").toLocal8Bit();
+    m_instruction.currentInstruction=QString("68aaaaaaaaaaaa68110433323535b016").toLocal8Bit();
+    m_instruction.effectivePowerInstruction=QString("68aaaaaaaaaaaa68110433323635b116").toLocal8Bit();
+    m_instruction.reactivePowerInstruction=QString("68aaaaaaaaaaaa68110433323735b216").toLocal8Bit();
+    m_instruction.apparentPowerInstruction=QString("68aaaaaaaaaaaa68110433323835b316").toLocal8Bit();
+    m_instruction.powerFactorInstruction=QString("68aaaaaaaaaaaa68110433323935b416").toLocal8Bit();
+    m_instruction.voltageInstruction=QByteArray::fromHex(m_instruction.voltageInstruction);
+    m_instruction.currentInstruction=QByteArray::fromHex(m_instruction.currentInstruction);
+    m_instruction.effectivePowerInstruction=QByteArray::fromHex(m_instruction.effectivePowerInstruction);
+    m_instruction.reactivePowerInstruction=QByteArray::fromHex( m_instruction.reactivePowerInstruction);
+    m_instruction.apparentPowerInstruction=QByteArray::fromHex(m_instruction.apparentPowerInstruction);
+    m_instruction.powerFactorInstruction=QByteArray::fromHex(m_instruction.powerFactorInstruction);
+}
+
+void Ammeter::initConnections()
+{
+    connect(this,&Ammeter::voltageDataGot,this,&Ammeter::getCurrent);
+    connect(this,&Ammeter::currentDataGot,this,&Ammeter::getEffectivePower);
+    connect(this,&Ammeter::effectivePowerDataGot,this,&Ammeter::getReactivePower);
+    connect(this,&Ammeter::reactivePowerDataGot,this,&Ammeter::getApparentPower);
+    connect(this,&Ammeter::apparentPowerDataGot,this,&Ammeter::getPowerFactor);
+    connect(this,&Ammeter::powerFactorDataGot,this,&Ammeter::startReadTimer);
+    connect(this,&Ammeter::powerFactorDataGot,this,&Ammeter::getDataOver);
+}
+
+void Ammeter::initData()
+{
+    latestData.va=0;latestData.vb=0;latestData.vc=0;
+    latestData.ia=0;latestData.ib=0;latestData.ic=0;
+    latestData.epa=0;latestData.epb=0;latestData.epc=0;latestData.eps=0;
+    latestData.rpa=0;latestData.rpb=0;latestData.rpc=0;latestData.rps=0;
+    latestData.apa=0;latestData.apb=0;latestData.apc=0;latestData.aps=0;
+    latestData.pfa=0;latestData.pfb=0;latestData.pfc=0;latestData.pfs=0;
+    failureCount=0;
+    m_readType=NoneType;
+}
+
+datatype Ammeter::minus33(QByteArray data)
+{
+    datatype result=0;
+    QByteArray temp=data.mid(0,1);
+    bool ok;
+    result+=10.0*(temp.toInt(&ok,16)-3);
+    temp=data.mid(1,1);
+    result+=1.0*((temp.toInt(&ok,16)-3));
+    return result;
+}
+
+void Ammeter::parseData()
+{
+
+}
+
+void Ammeter::startTimeoutTimer()
+{
+    timeout->start(1000);
+}
+
+void Ammeter::handleTimeOut()
+{
+
+}
+
+void Ammeter::getVoltage()
+{
+    qDebug()<<"before read voltage"<<endl;
+    readTimer->stop();
+    m_readType=ReadVoltage;
+    latestData.va=random(210,230);
+    latestData.vb=random(210,230);
+    latestData.vc=random(210,230);
+    qDebug()<<"votage data got"<<endl;
+    qDebug()<<"Phase A is "<<latestData.va<<endl;
+    emit voltageDataGot();
+
+}
+
+void Ammeter::getCurrent()
+{
+    qDebug()<<"before read current"<<endl;
+    m_readType=ReadCurrent;
+    latestData.ia=random(1,5);
+    latestData.ib=random(1,5);
+    latestData.ic=random(1,5);
+    emit currentDataGot();
+}
+
+void Ammeter::getEffectivePower()
+{
+    qDebug()<<"before read effectivePower"<<endl;
+    m_readType=ReadEffectivePower;
+    latestData.epa=random(3,9);
+    latestData.epb=random(3,9);
+    latestData.epc=random(3,9);
+    latestData.eps=latestData.epa+latestData.epb+latestData.epc;
+    emit effectivePowerDataGot();
+}
+
+void Ammeter::getReactivePower()
+{
+    qDebug()<<"before read reactivePower"<<endl;
+    m_readType=ReadReactivePower;
+    latestData.rpa=random(1,2);
+    latestData.rpb=random(1,2);
+    latestData.rpc=random(1,2);
+    latestData.rps=latestData.rpa+latestData.rpb+latestData.rpc;
+    emit reactivePowerDataGot();
+}
+
+void Ammeter::getApparentPower()
+{
+    qDebug()<<"before read apparentPower"<<endl;
+    m_readType=ReadApparentPower;
+    latestData.apa=random(12,15);
+    latestData.apb=random(12,15);
+    latestData.apc=random(12,15);
+    latestData.aps=latestData.apa+latestData.apb+latestData.apc;
+    emit apparentPowerDataGot();
+}
+
+void Ammeter::getPowerFactor()
+{
+    qDebug()<<"before read powerFactor"<<endl;
+    m_readType=ReadPowerFactor;
+    latestData.pfa=random(0,1);
+    latestData.pfb=random(0,1);
+    latestData.pfc=random(0,1);
+    latestData.pfs=random(0,1);
+    emit powerFactorDataGot();
+}
+
+void Ammeter::startReadTimer()
+{
+    readTimer->start(1000);
+
+}
+
+#endif
