@@ -1,4 +1,4 @@
-/**
+ /**
  * Database class, responsible for data operation such as storage, reading and slicing
  *
 */

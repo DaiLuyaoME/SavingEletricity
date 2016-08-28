@@ -16,13 +16,11 @@ class TestWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit TestWindow(QWidget *parent = 0);
+    explicit TestWindow(QWidget *parent = 0,DataProcessor *processor=0);
     ~TestWindow();
-    void setDataprocessor(DataProcessor &dprocessor);
-
 private:
     Ui::TestWindow *ui;
-    DataProcessor dataProcessor;
+    DataProcessor dataPro;
     QStandardItemModel testModel;
     QList<TestRecord> testRecords;
 
@@ -31,6 +29,7 @@ private slots:
     void on_beginTest_clicked();
     void on_testEnd_clicked();
     void on_clearTestRecords_clicked();
+    void on_returnBtn_clicked();
 };
 
 #endif // TESTWINDOW_H
