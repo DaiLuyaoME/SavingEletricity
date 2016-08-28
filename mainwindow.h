@@ -30,9 +30,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
     RealTimeDataWindow* realTimeWin;
-    HistoryDataWindow historyWin;
-    ConfigWindow configWin;
-    TestWindow testWin;
+    HistoryDataWindow* historyWin;
+    ConfigWindow* configWin;
+    TestWindow* testWin;
     DataProcessor dataPro;
 
 

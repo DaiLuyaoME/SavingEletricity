@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <dataprocessor.h>
 #include "qcustomplot.h"
-
+#include <QPen>
 #define VMODE 0
 #define IMODE 1
 #define EPMODE 2
@@ -35,6 +35,8 @@ private slots:
     void on_pfRadioBtn_toggled(bool checked);
     void on_horizontalSlider_sliderReleased();
 
+    void on_returnBtn_clicked();
+
 private:
     int mode,range,removeIdx,addIdx;
     Ui::RealTimeDataWindow *ui;
@@ -47,6 +49,7 @@ private:
     void trimdata(int range);
     void addDataToPlot();
     void setParentWin(QWidget* p);
+    void initPlotStyle();
 };
 
 #endif // REALTIMEDATAWINDOW_H

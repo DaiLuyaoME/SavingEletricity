@@ -7,15 +7,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     realTimeWin=new RealTimeDataWindow(0,&dataPro);
+    historyWin=new HistoryDataWindow(0,&dataPro);
+    testWin=new TestWindow(0,&dataPro);
     realTimeWin->hide();
-    historyWin.setParentWin(this);
-//    realTimeWin->setDataProcessor(&dataPro);
+    historyWin->hide();
+    testWin->hide();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete realTimeWin;
+    delete historyWin;
+    delete testWin;
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -26,12 +30,12 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    testWin.show();
-    this->hide();
+    testWin->show();
+//    this->hide();
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    historyWin.show();
-    this->hide();
+    historyWin->show();
+//    this->hide();
 }
