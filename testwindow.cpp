@@ -6,8 +6,8 @@
  * Author: Wu Yuanhao
  */
 
-TestWindow::TestWindow(QWidget *parent) :
-    QWidget(parent),
+TestWindow::TestWindow(QWidget *parent, DataProcessor *processor) :
+    QWidget(parent),dataPro(processor),
     ui(new Ui::TestWindow)
 {
     ui->setupUi(this);
@@ -67,4 +67,9 @@ void TestWindow::on_clearTestRecords_clicked()
     testRecords.clear();
     testModel.clear();
     ui->avgNoLabel->setText(QString("0"));
+}
+
+void TestWindow::on_returnBtn_clicked()
+{
+    this->hide();
 }

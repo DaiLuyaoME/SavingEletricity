@@ -1,15 +1,15 @@
 #include "historydatawindow.h"
 #include "ui_historydatawindow.h"
 
-HistoryDataWindow::HistoryDataWindow(QWidget *parent) :
-    QWidget(parent),
+HistoryDataWindow::HistoryDataWindow(QWidget *parent, DataProcessor *processor) :
+    QWidget(parent),dataPro(processor),
     ui(new Ui::HistoryDataWindow)
 {
     ui->setupUi(this);
     range=3600;
     mode=VMODE;
     const char plotnames[4]={'a','b','c','s'};
-    const int plotcolors[4]={Qt::red,Qt::blue,Qt::black,Qt::green};
+    Qt::GlobalColor plotcolors[4]={Qt::red,Qt::blue,Qt::black,Qt::green};
     for (int i=0;i<4;i++)
     {
         plots[i].addGraph();
@@ -178,7 +178,6 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
 void HistoryDataWindow::on_returnBtn_clicked()
 {
     this->hide();
-    parentWin->show();
 }
 
 void HistoryDataWindow::setParentWin(QWidget* p)
