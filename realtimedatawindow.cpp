@@ -10,7 +10,7 @@ RealTimeDataWindow::RealTimeDataWindow(QWidget *parent,DataProcessor *processor)
     mode=VMODE;
     connect(dataPro,&DataProcessor::newRealTimeData,this,&RealTimeDataWindow::addDataToPlot);
     const char plotnames[4]={'a','b','c','s'};
-    const int plotcolors[4]={Qt::red,Qt::blue,Qt::black,Qt::green};
+    const int plotcolors[4]={Qt::red,Qt::blue,Qt::green,Qt::black};
     for (int i=0;i<4;i++)
     {
         plots[i].addGraph();
@@ -18,6 +18,7 @@ RealTimeDataWindow::RealTimeDataWindow(QWidget *parent,DataProcessor *processor)
         plots[i].graph(0)->setName(QString(plotnames[i]));
         plots[i].legend->setVisible(true);
         plots[i].graph(0)->setPen(QPen(plotcolors[i]));
+        plots[i].legend->autoMargins();
     }
     replot(mode,range);
 }
@@ -120,8 +121,9 @@ void RealTimeDataWindow::replot(int mode, int range)
 
     removeIdx=0;
     int i;
-    for (i=0;i<datapoints.length();i++)
+    for (i=0;i<range;i++)
     {
+            addIdx=i;
         if (i>=datapoints.length())
             break;
         if (mode==VMODE)
@@ -165,9 +167,12 @@ void RealTimeDataWindow::replot(int mode, int range)
             plots[3].graph(0)->addData(addIdx,datapoints[i].pfs);
         }
     }
-    addIdx=i;
+
     for (int i=0;i<4;i++)
+    {
         plots[i].replot();
+        plots[i].yAxis->rescale();
+    }
 }
 
 void RealTimeDataWindow::on_horizontalSlider_sliderReleased()
@@ -245,5 +250,6 @@ void RealTimeDataWindow::addDataToPlot()
         plots[2].graph(0)->addData(addIdx,newdata.pfc);
         plots[3].graph(0)->addData(addIdx,newdata.pfs);
     }
+    replot(mode,range);
 
 }
