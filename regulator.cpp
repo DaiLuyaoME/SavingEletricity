@@ -12,21 +12,52 @@ Regulator::Regulator(QObject *parent) : QObject(parent)
     timeoutTimer=new QTimer(this);
     connect(timeoutTimer,&QTimer::timeout,this,&Regulator::handleTimeout);
     timeoutCount=0;
+    gotEnding=false;
     type=NoneRegulationType;
+}
 
+void Regulator::sendVoltageAtMinPower(DataPoint &voltage)
+{
+    QString temp=QString("PMVA%1PMVB%2PMVC%3").arg(voltage.va,0,'f',1).arg(voltage.vb,0,'f',1).arg(voltage.vc,0,'f',1);
+    regulatorPort->write(temp.toLocal8Bit()); 
+    qDebug()<<"the voltage at minpower is "<<temp;
+    qDebug()<<"data to write "<<temp.toLocal8Bit(); 
 
 
 }
 
-void Regulator::sendVoltageAtMinPower(DataPoint voltage)
+///数据不要忘了加互感器参数！！！！
+void Regulator::sendAmmeterData(DataPoint& data)
 {
+    QString temp=QString("VA%1VB%2VC%3").arg(data.va,0,'f',1).arg(data.vb,0,'f',1).arg(data.vc,0,'f',1);
+    qDebug()<<"voltage:"<<temp;
+    qDebug()<<"voltage data to write:"<<temp.toLocal8Bit();
+    regulatorPort->write(temp.toLocal8Bit());
+    temp=QString("IA%1IB%2IC%3").arg(data.ia,0,'f',3).arg(data.ib,0,'f',3).arg(data.ic,0,'f',3);
+    qDebug()<<"current:"<<temp;
+    qDebug()<<"current data to write:"<<temp.toLocal8Bit();
+    regulatorPort->write(temp.toLocal8Bit());
+    temp=QString("PA%1PB%2PC%3PS%4").arg(data.epa,0,'f',3).arg(data.epb,0,'f',3).arg(data.epc,0,'f',3).arg(data.eps,0,'f',3);
+    qDebug()<<"effective power："<<temp;
+    qDebug()<<"effective power data to write:"<<temp.toLocal8Bit();
+    regulatorPort->write(temp.toLocal8Bit());
 
 }
 
 void Regulator::beginRegulate()
 {
-    type=WaitForBegining;
-    regulatorPort->write("begin");
+    type=WaitForRegulationBegining;
+    buffer.clear();
+    gotEnding=false;
+    regulatorPort->write("BR");
+}
+
+void Regulator::beginTest()
+{
+    type=WaitForTestBegining;
+    buffer.clear();
+    gotEnding=false;
+    regulatorPort->write("BT");
 }
 
 //具体的串口产生需要根据实际情况进行调整
@@ -42,7 +73,6 @@ void Regulator::openPort()
         }
 
     }
-
     regulatorPort->setBaudRate(QSerialPort::Baud9600);
     regulatorPort->setDataBits(QSerialPort::Data8);
     regulatorPort->setParity(QSerialPort::EvenParity);
@@ -51,7 +81,6 @@ void Regulator::openPort()
     regulatorPort->open(QIODevice::ReadWrite);
     connect(regulatorPort,&QSerialPort::readyRead,this,&Regulator::parseData);
     connect(regulatorPort,&QSerialPort::bytesWritten,this,&Regulator::startTimeout);
-
 }
 
 void Regulator::ack()
@@ -73,25 +102,52 @@ void Regulator::parseData()
     }
     else
     {
-        if (type==WaitForBegining && buffer.data()==HAS_BEGUN)
+        if(buffer.contains("OK"))
         {
-            timeoutTimer->stop();
             timeoutCount=0;
-            emit regulationBegun();
+            timeoutTimer->stop();
             buffer.clear();
+            if(type==WaitForRegulationBegining)
+            {
+                emit regulationBegun();
+                type=WaitForRegulationEnding;
+            }
+            else if(type==WaitForTestBegining)
+            {
+                emit testBegun();
+                type=WaitForTestEnding;
+            }
         }
-        else if(type==WaitForEnding && buffer.data()==HAS_ENDED)
+        else if(buffer.contains("ER"))
         {
-            regulatorPort->write(OVER_CONFIRM);
-            emit regulationOver();//这个信号有多次发送的潜在风险
-        }
+            if(gotEnding==false)
+            {
+                gotEnding=true;
+                emit regulationOver();
+            }
+            else
+            {
 
+            }
+        }
+        else if(buffer.contains("ET"))
+        {
+            if(gotEnding==false)
+            {
+                gotEnding=true;
+                emit testOver();
+            }
+            else
+            {
+
+            }
+        }
     }
 }
 
 void Regulator::startTimeout()
 {
-    if(type==WaitForBegining)
+    if(type==WaitForRegulationBegining || type==WaitForTestBegining)
     {
         timeoutTimer->start(TIMEOUT_INTERVAL);
     }
@@ -101,7 +157,7 @@ void Regulator::handleTimeout()
 {
     timeoutTimer->stop();
     ++timeoutCount;
-    if (type==WaitForBegining)
+    if (type==WaitForRegulationBegining)
     {
         if (timeoutCount<MAX_TIMEOUT_COUNT)
         {
@@ -109,14 +165,20 @@ void Regulator::handleTimeout()
         }
         else
         {
-            emit regulatorError(WaitForBegining);
+            emit regulatorError();
             timeoutCount=0;
         }
     }
-    else
+    else if(type==WaitForTestBegining)
     {
-
+        if (timeoutCount<MAX_TIMEOUT_COUNT)
+        {
+            beginTest();
+        }
+        else
+        {
+            emit regulatorError();
+            timeoutCount=0;
+        }
     }
-
-
 }
