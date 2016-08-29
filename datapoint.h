@@ -15,8 +15,10 @@ struct DataPoint
 enum RegulatorInstructionType
 {
     NoneRegulationType=0,
-    WaitForBegining,
-    WaitForEnding,
+    WaitForRegulationBegining,
+    WaitForRegulationEnding,
+    WaitForTestBegining,
+    WaitForTestEnding,
     OpenPort
 
 };
