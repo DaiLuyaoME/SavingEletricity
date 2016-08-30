@@ -113,4 +113,5 @@ void Database::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &slic
         // slicedData.append(*newpoint);
         slicedData.append(newpoint);
     }
+    qDebug()<<"database ok";
 }

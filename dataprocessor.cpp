@@ -267,7 +267,8 @@ void DataProcessor::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> 
     database->dataSlicer(begin,end,historyorigindatabuffer);
     int origindataamount = historyorigindatabuffer.size();
     int datainterval = origindataamount / dataamount;
-    for(int i = 0;i <= origindataamount;)
+    qDebug()<<"begin slicer";
+    for(int i = 0;i < origindataamount;)
     {
         datapoints.push_back(historyorigindatabuffer.at(i));
         i += datainterval;
