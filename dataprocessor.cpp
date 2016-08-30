@@ -3,7 +3,7 @@
 #define REALTIMEDATABUFFERCOUNT 3600//realTimeDataBuffer 数据个数
 #define GETDATATIMEDEFAULT      1//默认读取数据间隔 单位：second
 #define SAVEDATATIMEDEFALT      1//默认存储数据间隔 单位：second
-#define MONITERTIMEDEFALT       10//默认监控计算间隔 单位：second
+#define MONITORTIMEDEFALT       10//默认监控计算间隔 单位：second
 #define ERROR                   -1//报错回传参数
 
 DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
@@ -21,7 +21,7 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
 
     GetDataTimeInterval   = GETDATATIMEDEFAULT;
     SaveDataTimeInterval  = SAVEDATATIMEDEFALT;
-    MonitorTimeInterval   = MONITERTIMEDEFALT;
+    MonitorTimeInterval   = MONITORTIMEDEFALT;
     /*读取数据*/
     QObject::connect(ammeter,SIGNAL(getDataOver()),this,SLOT(getData()));
     QObject::connect(ammeter,SIGNAL(ammeterError()),this,SLOT(ammeterGetDataError()));
@@ -35,6 +35,9 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
     QObject::connect(regulator,SIGNAL(regulationBegun()),this,SLOT(regulatorStart()));
     QObject::connect(regulator,SIGNAL(regulationOver()),this,SLOT(regulatorCount()));
     QObject::connect(regulator,SIGNAL(regulatorError()),this,SLOT(regulatorActionError()));
+
+    QObject::connect(regulator,SIGNAL(testBegun()),this,SLOT(testStart()));
+    QObject::connect(regulator,SIGNAL(testOver()),this,SLOT(testCount()));
 
 
 
@@ -83,7 +86,7 @@ DataPoint DataProcessor::getLastData()
 /*
  * 获得最新的功率数据
 */
-float DataProcessor::getLastPower()
+datatype DataProcessor::getLastPower()
 {
     if(realTimeDataBuffer.isEmpty())
     {
@@ -125,8 +128,9 @@ void DataProcessor::monitorAction()
     {
         return;
     }
-    float templastpower = realTimeDataBuffer.first().eps;//计算有功功率
-    float temppowerporprotion = 0.0;
+    regulator->sendAmmeterData(realTimeDataBuffer.first());
+    datatype templastpower = realTimeDataBuffer.first().eps;//计算有功功率
+    datatype temppowerporprotion = 0.0;
     AveragePower = getAveragePower(MonitorTimeInterval);
     temppowerporprotion = AveragePower * ProporitonLimit;
     if(templastpower>(AveragePower+temppowerporprotion)||templastpower<(AveragePower-temppowerporprotion))
@@ -139,10 +143,10 @@ void DataProcessor::monitorAction()
 *默认计算10分钟内的平均功率，600个数据
 *如果计算时间内的要求数据少于 realdtimedatabuffer 则使用当前记录数据
 */
-float DataProcessor::getAveragePower(int timeLength)
+datatype DataProcessor::getAveragePower(int timeLength)
 {
-    float tempaveragepower = 0.0;
-    float temptotalpower   = 0.0;
+    datatype tempaveragepower = 0.0;
+    datatype temptotalpower   = 0.0;
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
 
@@ -164,9 +168,9 @@ float DataProcessor::getAveragePower(int timeLength)
 *timeLength:计算时间 单位：second
 *如果计算时间内的要求数据少于 realdtimedatabuffer 则使用当前记录数据
 */
-float DataProcessor::getMinPower(int timeLength)
+datatype DataProcessor::getMinPower(int timeLength)
 {
-    float tempminpower = 0.0;
+    datatype tempminpower = 0.0;
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
 
@@ -190,11 +194,17 @@ void DataProcessor::regulatorAction()
 {
     regulator->beginRegulate();
 }
+
+void DataProcessor::testAction()
+{
+    regulator->beginTest();//开始测试
+}
 /*
  * 调节函数回传开始动作 开始计时
 */
 void DataProcessor::regulatorStart()
 {
+    emit monitorBegun();
     RegulatorTime->restart();
 }
 /*
@@ -205,6 +215,28 @@ void DataProcessor::regulatorActionError()
     RegulatorTime->elapsed();
     emit regulatorError();
 }
+
+void DataProcessor::testStart()
+{
+    monitorTimer->stop();//停止监控计时
+    PowerBeforeTest = realTimeDataBuffer.first().eps;
+}
+
+void DataProcessor::testCount()
+{
+    PowerAfterTest = realTimeDataBuffer.first().eps;
+    if(PowerBeforeTest != 0.0)
+    {
+        SavingRate = (PowerBeforeTest - PowerAfterTest) / PowerBeforeTest;
+    }
+    else
+    {
+        SavingRate = 0.0;
+        emit actionError();
+    }
+    monitorTimer->start(MonitorTimeInterval*1000);//默认600s一次
+    emit testFinish();
+}
 /*
  * 调节函数结束
  * 给下位机返回调控时间内最低功率点的数据点
@@ -214,11 +246,12 @@ void DataProcessor::regulatorCount()
     int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
     DataPoint tempminpowerdatapoint = getMinPowerDataPoint(counttime);
     regulator->sendVoltageAtMinPower(tempminpowerdatapoint);
+    emit monitorFinish();
 }
 /*找到当前功率最低点*/
 DataPoint DataProcessor::getMinPowerDataPoint(int timeLength)
 {
-    float tempminpower = 0.0;
+    datatype tempminpower = 0.0;
     DataPoint tempminpowerdatapoint;
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
@@ -229,9 +262,6 @@ DataPoint DataProcessor::getMinPowerDataPoint(int timeLength)
         tempminpower = (tempminpower<realTimeDataBuffer.at(counter).eps?tempminpower:realTimeDataBuffer.at(counter).eps);//寻找最小功率
         tempminpowerdatapoint = realTimeDataBuffer.at(counter);//??返回那个电压值
     }
-    float MP = realTimeDataBuffer.at(counttime-1).eps;
-    float MS = realTimeDataBuffer.first().eps;
-    SavingRate = (MP-MS)/MP;
     emit regulatorFinish();//调节完成
     return tempminpowerdatapoint;
 }
@@ -283,7 +313,7 @@ void DataProcessor::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> 
 * timetype:
 * “1”：GetDataTime 采样数据间隔
 * ”2“: SaveDataTime 存储数据间隔
-* ”3“: MoniterTime  监控时间间隔
+* ”3“: MonitorTime  监控时间间隔
 */
 void DataProcessor::setTimeInterval(int interval, int timettype)
 {
