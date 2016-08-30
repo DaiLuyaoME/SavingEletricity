@@ -22,7 +22,6 @@ class HistoryDataWindow : public QWidget
 
 public:
     explicit HistoryDataWindow(QWidget *parent = 0, DataProcessor *processor=0);
-    void setParentWin(QWidget* p);
     ~HistoryDataWindow();
 
 
@@ -39,11 +38,9 @@ private slots:
 private:
     DataProcessor *dataPro;
     Ui::HistoryDataWindow *ui;
-
     QCustomPlot plots[4];
     QList<DataPoint> datapoints;
     int mode,range;
-    QWidget* parentWin;
 
     void replot(int mode,int range);
 

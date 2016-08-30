@@ -170,7 +170,7 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
     endDateTime.setDate(ui->endDate->date());
     endDateTime.setTime(QTime(ui->endHour->value(),0,0,0));
 
-//    dataPro->dataSlicer(beginDateTime,endDateTime,360,datapoints);
+    dataPro->dataSlicer(beginDateTime,endDateTime,datapoints,360);
     range=360;
     replot(mode,range);
 }
@@ -178,10 +178,5 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
 void HistoryDataWindow::on_returnBtn_clicked()
 {
     this->hide();
-}
-
-void HistoryDataWindow::setParentWin(QWidget* p)
-{
-    parentWin=p;
 }
 

@@ -41,7 +41,6 @@ void Regulator::sendAmmeterData(DataPoint& data)
     qDebug()<<"effective power："<<temp;
     qDebug()<<"effective power data to write:"<<temp.toLocal8Bit();
     regulatorPort->write(temp.toLocal8Bit());
-
 }
 
 void Regulator::beginRegulate()
