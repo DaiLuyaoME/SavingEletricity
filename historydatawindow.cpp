@@ -29,61 +29,97 @@ HistoryDataWindow::~HistoryDataWindow()
 void HistoryDataWindow::on_vRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=VMODE)
         {
             replot(VMODE,range);
             mode=VMODE;
         }
+        for (int i=0;i<3;++i)
+        {
+            plots[i].yAxis->setLabel("电压/V");
+        }
+    }
 }
 
 void HistoryDataWindow::on_iRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=IMODE)
         {
             replot(IMODE,range);
             mode=IMODE;
         }
+        for (int i=0;i<3;++i)
+        {
+            plots[i].yAxis->setLabel("电流/A");
+        }
+    }
 }
 
 void HistoryDataWindow::on_epRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=EPMODE)
         {
             replot(EPMODE,range);
             mode=EPMODE;
         }
+        for (int i=0;i<4;++i)
+        {
+            plots[i].yAxis->setLabel("有功功率/KW");
+        }
+    }
 }
 
 void HistoryDataWindow::on_fpRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=RPMODE)
         {
             replot(RPMODE,range);
             mode=RPMODE;
         }
+        for (int i=0;i<4;++i)
+        {
+            plots[i].yAxis->setLabel("无功功率/Var");
+        }
+    }
 }
 
 void HistoryDataWindow::on_apRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=APMODE)
         {
             replot(APMODE,range);
             mode=APMODE;
         }
+        for (int i=0;i<4;++i)
+        {
+            plots[i].yAxis->setLabel("视在功率/KVA");
+        }
+    }
 }
 
 void HistoryDataWindow::on_pfRadioBtn_toggled(bool checked)
 {
     if (checked)
+    {
         if (mode!=PFMODE)
         {
             replot(PFMODE,range);
             mode=PFMODE;
         }
+        for (int i=0;i<4;++i)
+        {
+            plots[i].yAxis->setLabel("功率因素/KVA");
+        }
+    }
 }
 
 
@@ -158,7 +194,10 @@ void HistoryDataWindow::replot(int mode,int range)
         }
     }
     for (int i=0;i<4;i++)
+    {
         plots[i].replot();
+        plots[i].yAxis->rescale();
+    }
 }
 
 void HistoryDataWindow::on_setRangeBtn_clicked()
@@ -170,13 +209,14 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
     endDateTime.setDate(ui->endDate->date());
     endDateTime.setTime(QTime(ui->endHour->value(),0,0,0));
 
-//<<<<<<< HEAD
-    dataPro->dataSlicer(beginDateTime,endDateTime,datapoints,360);
-//=======
-//    // get data from dataprocess, then replot
-////    dataPro->dataSlicer(beginDateTime,endDateTime,360,datapoints);
-//>>>>>>> origin/master
-    range=360;
+    //<<<<<<< HEAD
+    range=10;
+    dataPro->dataSlicer(beginDateTime,endDateTime,datapoints,range);
+    //=======
+    //    // get data from dataprocess, then replot
+    ////    dataPro->dataSlicer(beginDateTime,endDateTime,360,datapoints);
+    //>>>>>>> origin/master
+
     replot(mode,range);
 }
 
