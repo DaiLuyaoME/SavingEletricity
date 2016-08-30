@@ -33,6 +33,8 @@ signals:
     void actionError();//不合理操作
     void regulatorFinish();//下位机操作完成
     void newRealTimeData();//获得新的数据，通知UI绘图
+    void moniterBegun();//监控开始
+    void moniterOver();//监控结束
 public slots:
     void regulatorAction();//调节下位机操作
 private slots:
@@ -47,7 +49,6 @@ private:
     Database *database;//数据库实例
     Regulator *regulator;//下位机动作实例
     Ammeter *ammeter;//电表实例
-    QTimer *getDataTimer;//默认每1秒发动一次
     QTimer *saveDataTimer;//默认每10秒发动一次
     QTimer *monitorTimer;//默认每10分钟发动一次
     QTime *RegulatorTime;//regulator调控及时   

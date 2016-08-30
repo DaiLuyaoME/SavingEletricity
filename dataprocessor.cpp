@@ -12,7 +12,6 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
     database = new Database(this);//数据库实例
 	ammeter = new Ammeter(this);//电表实例
 	regulator  = new Regulator(this);//下位机实例
-    getDataTimer = new QTimer(this);//读取数据计时器
     saveDataTimer = new QTimer(this);//存储数据计时器
     monitorTimer = new QTimer(this);//电表监控计时器
     RegulatorTime = new QTime();//下位机计时
