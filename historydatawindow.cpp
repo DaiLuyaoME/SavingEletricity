@@ -170,6 +170,7 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
     endDateTime.setDate(ui->endDate->date());
     endDateTime.setTime(QTime(ui->endHour->value(),0,0,0));
 
+    // get data from dataprocess, then replot
 //    dataPro->dataSlicer(beginDateTime,endDateTime,360,datapoints);
     range=360;
     replot(mode,range);
@@ -185,3 +186,32 @@ void HistoryDataWindow::setParentWin(QWidget* p)
     parentWin=p;
 }
 
+
+void HistoryDataWindow::on_sincBtn_2_clicked()
+{
+    ui->beginHour->setValue(ui->beginHour->value()+1);
+    if (ui->beginHour->value()>23)
+        ui->beginHour->setValue(23);
+}
+
+void HistoryDataWindow::on_sdecBtn_2_clicked()
+{
+    ui->beginHour->setValue(ui->beginHour->value()-1);
+    if (ui->beginHour->value()<0)
+        ui->beginHour->setValue(0);
+
+}
+
+void HistoryDataWindow::on_eincBtn_clicked()
+{
+    ui->endHour->setValue(ui->endHour->value()+1);
+    if (ui->endHour->value()>23)
+        ui->endHour->setValue(23);
+}
+
+void HistoryDataWindow::on_edecBtn_clicked()
+{
+    ui->endHour->setValue(ui->endHour->value()-1);
+    if (ui->endHour->value()<0)
+        ui->endHour->setValue(0);
+}

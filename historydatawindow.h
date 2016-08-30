@@ -36,6 +36,14 @@ private slots:
     void on_setRangeBtn_clicked();
     void on_returnBtn_clicked();
 
+    void on_sincBtn_2_clicked();
+
+    void on_sdecBtn_2_clicked();
+
+    void on_eincBtn_clicked();
+
+    void on_edecBtn_clicked();
+
 private:
     DataProcessor *dataPro;
     Ui::HistoryDataWindow *ui;
