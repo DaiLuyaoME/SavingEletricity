@@ -38,7 +38,7 @@ public slots:
 private slots:
     void getData();//UI通过dataprocessor获得数据
     void ammeterGetDataError();//电表读数错误
-    bool saveData();//将数据存储到database
+    void saveData();//将数据存储到database
     void monitorAction();//每隔一段时间进行监控操作
     void regulatorCount();//计算间隔时间内的数据
     void regulatorStart();//下位机动作后开始计时

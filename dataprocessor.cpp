@@ -2,7 +2,7 @@
 #include "math.h"
 #define REALTIMEDATABUFFERCOUNT 3600//realTimeDataBuffer 数据个数
 #define GETDATATIMEDEFAULT      1//默认读取数据间隔 单位：second
-#define SAVEDATATIMEDEFALT      10//默认存储数据间隔 单位：second
+#define SAVEDATATIMEDEFALT      1//默认存储数据间隔 单位：second
 #define MONITERTIMEDEFALT       10//默认监控计算间隔 单位：second
 #define ERROR                   -1//报错回传参数
 
@@ -35,7 +35,7 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
    /*regulator 回传电压值*/
     QObject::connect(regulator,SIGNAL(regulationBegun()),this,SLOT(regulatorStart()));
     QObject::connect(regulator,SIGNAL(regulationOver()),this,SLOT(regulatorCount()));
-    QObject::connect(regulator,SIGNAL(regulatorError(RegulatorInstructionType)),this,SLOT(regulatorActionError()));
+    QObject::connect(regulator,SIGNAL(regulatorError()),this,SLOT(regulatorActionError()));
 
 
 
@@ -96,13 +96,13 @@ float DataProcessor::getLastPower()
 /*
 *向数据库中写入数据
 */
-bool DataProcessor::saveData()
+void DataProcessor::saveData()
 {
     bool dbreturn;
     if(realTimeDataBuffer.isEmpty())//没有数据存储
     {
         emit actionError();
-        return false;
+        return ;
     }
     else
     {
@@ -111,9 +111,9 @@ bool DataProcessor::saveData()
         {
             saveDataTimer->stop();
             emit dataBaseError();
-            return false;
+            return ;
         }
-        return true;
+        return ;
     }
 
 }
@@ -267,7 +267,8 @@ void DataProcessor::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> 
     database->dataSlicer(begin,end,historyorigindatabuffer);
     int origindataamount = historyorigindatabuffer.size();
     int datainterval = origindataamount / dataamount;
-    for(int i = 0;i <= origindataamount;)
+    qDebug()<<"begin slicer";
+    for(int i = 0;i < origindataamount;)
     {
         datapoints.push_back(historyorigindatabuffer.at(i));
         i += datainterval;

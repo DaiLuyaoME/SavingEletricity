@@ -4,6 +4,7 @@
 Database::Database(QObject *parent) : QObject(parent)
 {
     db = QSqlDatabase::addDatabase("QSQLITE");
+    qDebug()<<"construct database";
     db.setDatabaseName(QString("data.db"));
     qDebug()<<db.open();
     qDebug()<<db.tables().length();
@@ -32,6 +33,8 @@ bool Database::saveData(DataPoint dataToSave)
 {
     QSqlQuery query;
     uint datetime=QDateTime::currentDateTime().toTime_t();
+    qDebug()<<"the datetime of saving data is "<<QDateTime::currentDateTime();
+    qDebug()<<datetime;
     query.prepare("INSERT INTO records (date, va, vb,vc,"
                   "ia,ib,ic,"
                   "epa,epb,epc,eps,"
@@ -80,33 +83,35 @@ void Database::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &slic
     uint enddatetime=end.toTime_t();
     QString q=QString("SELECT * From records where date>=%1 and date<=%2").arg(startdatetime).arg(enddatetime);
     query.exec(q);
-
+    DataPoint newpoint;
     while(query.next())
     {
         qDebug()<<"one record";
-        DataPoint* newpoint=new DataPoint();
-        newpoint->va=query.value("va").toFloat();
-        newpoint->vb=query.value("vb").toFloat();
-        newpoint->vc=query.value("vc").toFloat();
-        newpoint->ia=query.value("ia").toFloat();
-        newpoint->ib=query.value("ib").toFloat();
-        newpoint->ic=query.value("ic").toFloat();
-        newpoint->epa=query.value("epa").toFloat();
-        newpoint->epb=query.value("epb").toFloat();
-        newpoint->epc=query.value("epc").toFloat();
-        newpoint->eps=query.value("eps").toFloat();
-        newpoint->rpa=query.value("rpa").toFloat();
-        newpoint->rpb=query.value("rpb").toFloat();
-        newpoint->rpc=query.value("rpc").toFloat();
-        newpoint->rps=query.value("rps").toFloat();
-        newpoint->apa=query.value("apa").toFloat();
-        newpoint->apb=query.value("apb").toFloat();
-        newpoint->apc=query.value("apc").toFloat();
-        newpoint->aps=query.value("aps").toFloat();
-        newpoint->pfa=query.value("pfa").toFloat();
-        newpoint->pfb=query.value("pfb").toFloat();
-        newpoint->pfc=query.value("pfc").toFloat();
-        newpoint->pfs=query.value("pfs").toFloat();
-        slicedData.append(*newpoint);
+        // DataPoint* newpoint=new DataPoint();
+        newpoint.va=query.value("va").toFloat();
+        newpoint.vb=query.value("vb").toFloat();
+        newpoint.vc=query.value("vc").toFloat();
+        newpoint.ia=query.value("ia").toFloat();
+        newpoint.ib=query.value("ib").toFloat();
+        newpoint.ic=query.value("ic").toFloat();
+        newpoint.epa=query.value("epa").toFloat();
+        newpoint.epb=query.value("epb").toFloat();
+        newpoint.epc=query.value("epc").toFloat();
+        newpoint.eps=query.value("eps").toFloat();
+        newpoint.rpa=query.value("rpa").toFloat();
+        newpoint.rpb=query.value("rpb").toFloat();
+        newpoint.rpc=query.value("rpc").toFloat();
+        newpoint.rps=query.value("rps").toFloat();
+        newpoint.apa=query.value("apa").toFloat();
+        newpoint.apb=query.value("apb").toFloat();
+        newpoint.apc=query.value("apc").toFloat();
+        newpoint.aps=query.value("aps").toFloat();
+        newpoint.pfa=query.value("pfa").toFloat();
+        newpoint.pfb=query.value("pfb").toFloat();
+        newpoint.pfc=query.value("pfc").toFloat();
+        newpoint.pfs=query.value("pfs").toFloat();
+        // slicedData.append(*newpoint);
+        slicedData.append(newpoint);
     }
+    qDebug()<<"database ok";
 }
