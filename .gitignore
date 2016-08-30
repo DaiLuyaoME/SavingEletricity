@@ -1,2 +1,6 @@
 #二进制w文件
 *.pro.user
+
+#测试文件
+testluoyang.cpp
+testluoyang.h
