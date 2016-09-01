@@ -36,6 +36,7 @@ signals:
     void monitorBegun();//监控开始
     void monitorFinish();//监控结束
     void testFinish();//测试结束
+    void sendTestResult(datatype powerBefore,datatype powerAfter,float ratio);//将节电测试的结果发往testWindow
 
 
 public slots:

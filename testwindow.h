@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <dataprocessor.h>
 #include <QStandardItemModel>
+#include <QMessageBox>
 struct TestRecord {
     float before,after,ratio;
 };
@@ -30,6 +31,9 @@ private slots:
     void on_testEnd_clicked();
     void on_clearTestRecords_clicked();
     void on_returnBtn_clicked();
+    void on_calculateRatioButton_clicked();
+
+public slots:
     void getResult(datatype powerBefore,datatype powerAfter,float ratio);
 
 signals:

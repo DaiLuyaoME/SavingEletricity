@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     historyWin->hide();
     testWin->hide();
     connect(testWin,&TestWindow::testButtonClicked,&dataPro,&DataProcessor::testAction);
+    connect(&dataPro,&DataProcessor::sendTestResult,testWin,&TestWindow::getResult);
  }
 
 MainWindow::~MainWindow()
