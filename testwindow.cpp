@@ -72,6 +72,7 @@ void TestWindow::on_clearTestRecords_clicked()
 void TestWindow::on_returnBtn_clicked()
 {
     this->hide();
+    dataPro->openMonitor();
 }
 
 void TestWindow::getResult(datatype powerBefore, datatype powerAfter, float ratio)

@@ -33,6 +33,10 @@ private:
     TestWindow* testWin;
     DataProcessor dataPro;
 
+public slots:
+    void disableTestWindow();
+    void endableTestWindow();
+
 signals:
 
 
