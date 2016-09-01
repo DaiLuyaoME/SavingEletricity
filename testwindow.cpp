@@ -55,6 +55,7 @@ void TestWindow::on_beginTest_clicked()
     newRecord->before=qrand();
 
     testRecords.append(*newRecord);
+    emit testButtonClicked();
 }
 
 void TestWindow::on_testEnd_clicked()
@@ -72,4 +73,9 @@ void TestWindow::on_clearTestRecords_clicked()
 void TestWindow::on_returnBtn_clicked()
 {
     this->hide();
+}
+
+void TestWindow::getResult(datatype powerBefore, datatype powerAfter, float ratio)
+{
+
 }

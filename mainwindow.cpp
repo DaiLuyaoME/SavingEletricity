@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     realTimeWin->hide();
     historyWin->hide();
     testWin->hide();
-}
+    connect(testWin,&TestWindow::testButtonClicked,&dataPro,&DataProcessor::testAction);
+ }
 
 MainWindow::~MainWindow()
 {
@@ -22,19 +23,20 @@ MainWindow::~MainWindow()
     delete testWin;
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_realtimeButton_clicked()
 {
     realTimeWin->show();
 //    this->hide();
 }
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_testButton_clicked()
 {
     testWin->show();
+//    emit openTestWindow();
 //    this->hide();
 }
 
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_historyButton_clicked()
 {
     historyWin->show();
 //    this->hide();

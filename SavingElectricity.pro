@@ -38,7 +38,6 @@ HEADERS  += mainwindow.h \
     database.h \
     qcustomplot.h \
     monitor.h
-
 FORMS    += mainwindow.ui \
     realtimedatawindow.ui \
     historydatawindow.ui \
