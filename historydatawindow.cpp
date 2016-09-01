@@ -19,6 +19,12 @@ HistoryDataWindow::HistoryDataWindow(QWidget *parent, DataProcessor *processor) 
         plots[i].graph(0)->setPen(QPen(plotcolors[i]));
     }
     replot(mode,range);
+
+    ui->endDate->setDate(QDate::currentDate());
+    ui->beginDate->setDate(QDate::currentDate());
+
+    ui->endHour->setValue(QTime::currentTime().hour());
+    ui->beginHour->setValue(QTime::currentTime().hour()-1);
 }
 
 HistoryDataWindow::~HistoryDataWindow()
@@ -205,6 +211,7 @@ void HistoryDataWindow::on_setRangeBtn_clicked()
     QDateTime beginDateTime,endDateTime;
     beginDateTime.setDate(ui->beginDate->date());
     beginDateTime.setTime(QTime(ui->beginHour->value(),0,0,0));
+
 
     endDateTime.setDate(ui->endDate->date());
     endDateTime.setTime(QTime(ui->endHour->value(),0,0,0));
