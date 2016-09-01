@@ -36,9 +36,12 @@ signals:
     void monitorBegun();//监控开始
     void monitorFinish();//监控结束
     void testFinish();//测试结束
+
+
 public slots:
     void regulatorAction();//调节下位机操作
     void testAction();//节电测试
+
 private slots:
     void getData();//UI通过dataprocessor获得数据
     void ammeterGetDataError();//电表读数错误
@@ -49,6 +52,9 @@ private slots:
     void regulatorActionError();//下位机动作错误
     void testStart();//测试开始
     void testCount();//测试结算
+    void closeMonitor();
+    void openMonitor();
+
 private:
     Database *database;//数据库实例
     Regulator *regulator;//下位机动作实例

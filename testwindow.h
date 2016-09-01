@@ -20,7 +20,7 @@ public:
     ~TestWindow();
 private:
     Ui::TestWindow *ui;
-    DataProcessor dataPro;
+    DataProcessor *dataPro;
     QStandardItemModel testModel;
     QList<TestRecord> testRecords;
 
@@ -30,6 +30,10 @@ private slots:
     void on_testEnd_clicked();
     void on_clearTestRecords_clicked();
     void on_returnBtn_clicked();
+    void getResult(datatype powerBefore,datatype powerAfter,float ratio);
+
+signals:
+    void testButtonClicked();
 };
 
 #endif // TESTWINDOW_H

@@ -197,7 +197,18 @@ void DataProcessor::regulatorAction()
 
 void DataProcessor::testAction()
 {
+    closeMonitor();
     regulator->beginTest();//开始测试
+}
+
+void DataProcessor::closeMonitor()
+{
+
+}
+
+void DataProcessor::openMonitor()
+{
+
 }
 /*
  * 调节函数回传开始动作 开始计时
@@ -236,6 +247,7 @@ void DataProcessor::testCount()
     }
     monitorTimer->start(MonitorTimeInterval*1000);//默认600s一次
     emit testFinish();
+    closeMonitor();
 }
 /*
  * 调节函数结束

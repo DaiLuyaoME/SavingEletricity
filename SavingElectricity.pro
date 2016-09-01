@@ -24,8 +24,7 @@ SOURCES += main.cpp\
     regulator.cpp \
     database.cpp \
     qcustomplot.cpp \
-    monitor.cpp \
-    testluoyang.cpp
+    monitor.cpp
 
 HEADERS  += mainwindow.h \
     datapoint.h \
@@ -38,9 +37,7 @@ HEADERS  += mainwindow.h \
     regulator.h \
     database.h \
     qcustomplot.h \
-    monitor.h \
-    testluoyang.h
-
+    monitor.h
 FORMS    += mainwindow.ui \
     realtimedatawindow.ui \
     historydatawindow.ui \
