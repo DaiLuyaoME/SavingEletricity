@@ -24,8 +24,8 @@ public:
     void setProportion(float proportion);//设置调节限位比例
     DataPoint getMinPowerDataPoint(int timeLength);//搜索最小功率的数据点
     void dataSlicer(QDateTime begin,QDateTime end,QList<DataPoint> &datapoints, int dataamount);
-    float getSavingRate();//结算节电率
-    void rewritePowerMessage(float *ap, float *tp, float *up, int timeLength);//average total up
+//    float getSavingRate();//结算节电率
+    void rewritePowerMessage(datatype &ap, datatype &tp, datatype &up, int timeLength);//average total up
 signals:
     void ammeterError();//电表故障
     void dataBaseError();//数据库故障
@@ -35,13 +35,12 @@ signals:
     void newRealTimeData();//获得新的数据，通知UI绘图
     void monitorBegun();//监控开始
     void monitorFinish();//监控结束
-    void testFinish();//测试结束
     void sendTestResult(datatype powerBefore,datatype powerAfter,float ratio);//将节电测试的结果发往testWindow
-
-
 public slots:
     void regulatorAction();//调节下位机操作
     void testAction();//节电测试
+    void closeMonitor();
+    void openMonitor();
 
 private slots:
     void getData();//UI通过dataprocessor获得数据
@@ -53,8 +52,6 @@ private slots:
     void regulatorActionError();//下位机动作错误
     void testStart();//测试开始
     void testCount();//测试结算
-    void closeMonitor();
-    void openMonitor();
 
 private:
     Database *database;//数据库实例

@@ -197,17 +197,18 @@ void DataProcessor::regulatorAction()
 
 void DataProcessor::testAction()
 {
-    closeMonitor();
     regulator->beginTest();//开始测试
 }
 
 void DataProcessor::closeMonitor()
 {
+    monitorTimer->stop();//关闭监控
 
 }
 
 void DataProcessor::openMonitor()
 {
+    monitorTimer->start(MonitorTimeInterval*1000);//开启监控
 
 }
 /*
@@ -229,7 +230,7 @@ void DataProcessor::regulatorActionError()
 
 void DataProcessor::testStart()
 {
-    monitorTimer->stop();//停止监控计时
+//    monitorTimer->stop();//停止监控计时
     PowerBeforeTest = realTimeDataBuffer.first().eps;
 }
 
@@ -245,9 +246,8 @@ void DataProcessor::testCount()
         SavingRate = 0.0;
         emit actionError();
     }
-    monitorTimer->start(MonitorTimeInterval*1000);//默认600s一次
-    emit testFinish();
-    closeMonitor();
+    emit sendTestResult(PowerBeforeTest,PowerAfterTest,SavingRate);
+//    monitorTimer->start(MonitorTimeInterval*1000);//重新开启监控 默认600s一次
 }
 /*
  * 调节函数结束
@@ -277,23 +277,19 @@ DataPoint DataProcessor::getMinPowerDataPoint(int timeLength)
     emit regulatorFinish();//调节完成
     return tempminpowerdatapoint;
 }
-float DataProcessor::getSavingRate()
-{
-    return SavingRate;
-}
-void DataProcessor::rewritePowerMessage(float *ap, float *tp, float *up, int timeLength)
+void DataProcessor::rewritePowerMessage(datatype &ap, datatype &tp, datatype &up, int timeLength)
 {
     int counttime = 0;
     int counter = 0;
-    *ap = getAveragePower(timeLength);
-    *tp = TotalPower;
-    *up = 0.0;
+    ap = getAveragePower(timeLength);
+    tp = TotalPower;
+    up = 0.0;
     counttime = (timeLength>realTimeDataBuffer.size()?realTimeDataBuffer.size():timeLength);//选取取合理的数据个数
     for(counter = 0;counter >= counttime; counter++)//找到最小功率
     {
-        if(realTimeDataBuffer.at(counter).eps>(*ap))
+        if(realTimeDataBuffer.at(counter).eps>(ap))
         {
-            *up += (realTimeDataBuffer.at(counter).eps - *ap);
+            up += (realTimeDataBuffer.at(counter).eps - ap);
         }
     }
 
