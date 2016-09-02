@@ -12,6 +12,7 @@
 #ifndef SIMULATION
 Ammeter::Ammeter(QObject *parent) : QObject(parent)
 {
+    coefficient=6;
     initPort();
     initInstruction();
     initConnections();
@@ -158,9 +159,9 @@ void Ammeter::parseData()
             QByteArray CH=buffer.mid(22,1);
             datatype C=(minus33(CH.toHex()))*10+(minus33(CM.toHex()))*0.1+(minus33(CL.toHex()))*0.001;
             qDebug()<<"get current data A "<<A<<endl;
-            latestData.ia=A;
-            latestData.ib=B;
-            latestData.ic=C;
+            latestData.ia=coefficient*A;
+            latestData.ib=coefficient*B;
+            latestData.ic=coefficient*C;
             buffer.clear();
             emit currentDataGot();
         }
@@ -194,10 +195,10 @@ void Ammeter::parseData()
             QByteArray CH=buffer.mid(25,1);
             datatype C=(minus33(CH.toHex()))+(minus33(CM.toHex()))*0.01+(minus33(CL.toHex()))*0.0001;
             qDebug()<<"get effectivePower data A "<<A<<endl;
-            latestData.eps=S;
-            latestData.epa=A;
-            latestData.epb=B;
-            latestData.epc=C;
+            latestData.eps=coefficient*S;
+            latestData.epa=coefficient*A;
+            latestData.epb=coefficient*B;
+            latestData.epc=coefficient*C;
             buffer.clear();
             emit effectivePowerDataGot();
         }
@@ -231,10 +232,10 @@ void Ammeter::parseData()
             QByteArray CH=buffer.mid(25,1);
             datatype C=(minus33(CH.toHex()))+(minus33(CM.toHex()))*0.01+(minus33(CL.toHex()))*0.0001;
             qDebug()<<"get reactivePower data A "<<A<<endl;
-            latestData.rps=S;
-            latestData.rpa=A;
-            latestData.rpb=B;
-            latestData.rpc=C;
+            latestData.rps=coefficient*S;
+            latestData.rpa=coefficient*A;
+            latestData.rpb=coefficient*B;
+            latestData.rpc=coefficient*C;
             buffer.clear();
             emit reactivePowerDataGot();
         }
@@ -268,10 +269,10 @@ void Ammeter::parseData()
             QByteArray CH=buffer.mid(25,1);
             datatype C=(minus33(CH.toHex()))+(minus33(CM.toHex()))*0.01+(minus33(CL.toHex()))*0.0001;
             qDebug()<<"get apparentPower data A "<<A<<endl;
-            latestData.aps=S;
-            latestData.apa=A;
-            latestData.apb=B;
-            latestData.apc=C;
+            latestData.aps=coefficient*S;
+            latestData.apa=coefficient*A;
+            latestData.apb=coefficient*B;
+            latestData.apc=coefficient*C;
             buffer.clear();
             emit apparentPowerDataGot();
         }
@@ -449,6 +450,7 @@ Ammeter::Ammeter(QObject *parent) : QObject(parent)
 {
     qDebug()<<"ammeter constructed"<<endl;
     srand(unsigned(time(0)));
+    coefficient=6;
 //    initPort();
 //    initInstruction();
     // timeout=new QTimer(this);
@@ -553,9 +555,9 @@ void Ammeter::getCurrent()
 {
     qDebug()<<"before read current"<<endl;
     m_readType=ReadCurrent;
-    latestData.ia=random(1,5);
-    latestData.ib=random(1,5);
-    latestData.ic=random(1,5);
+    latestData.ia=coefficient*random(1,5);
+    latestData.ib=coefficient*random(1,5);
+    latestData.ic=coefficient*random(1,5);
     emit currentDataGot();
 }
 
@@ -563,9 +565,9 @@ void Ammeter::getEffectivePower()
 {
     qDebug()<<"before read effectivePower"<<endl;
     m_readType=ReadEffectivePower;
-    latestData.epa=random(3,9);
-    latestData.epb=random(3,9);
-    latestData.epc=random(3,9);
+    latestData.epa=coefficient*random(3,9);
+    latestData.epb=coefficient*random(3,9);
+    latestData.epc=coefficient*random(3,9);
     latestData.eps=latestData.epa+latestData.epb+latestData.epc;
     emit effectivePowerDataGot();
 }
@@ -574,9 +576,9 @@ void Ammeter::getReactivePower()
 {
     qDebug()<<"before read reactivePower"<<endl;
     m_readType=ReadReactivePower;
-    latestData.rpa=random(1,2);
-    latestData.rpb=random(1,2);
-    latestData.rpc=random(1,2);
+    latestData.rpa=coefficient*random(1,2);
+    latestData.rpb=coefficient*random(1,2);
+    latestData.rpc=coefficient*random(1,2);
     latestData.rps=latestData.rpa+latestData.rpb+latestData.rpc;
     emit reactivePowerDataGot();
 }
@@ -585,9 +587,9 @@ void Ammeter::getApparentPower()
 {
     qDebug()<<"before read apparentPower"<<endl;
     m_readType=ReadApparentPower;
-    latestData.apa=random(12,15);
-    latestData.apb=random(12,15);
-    latestData.apc=random(12,15);
+    latestData.apa=coefficient*random(12,15);
+    latestData.apb=coefficient*random(12,15);
+    latestData.apc=coefficient*random(12,15);
     latestData.aps=latestData.apa+latestData.apb+latestData.apc;
     emit apparentPowerDataGot();
 }
@@ -606,6 +608,12 @@ void Ammeter::getPowerFactor()
 void Ammeter::startReadTimer()
 {
     readTimer->start(1000);
+
+}
+
+void Ammeter::changeCoeffcient(float value)
+{
+    coefficient=value;
 
 }
 

@@ -67,6 +67,7 @@ public slots:
     void getApparentPower();
     void getPowerFactor();
     void startReadTimer();
+    void changeCoeffcient(float value);
 
 private:
     DataPoint latestData;
@@ -77,6 +78,7 @@ private:
     QTimer * timeout;
     QTimer * readTimer;
     int failureCount;
+    float coefficient;
 };
 
 #endif // AMMETER_H

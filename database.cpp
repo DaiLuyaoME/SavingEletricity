@@ -86,7 +86,7 @@ void Database::dataSlicer(QDateTime begin, QDateTime end, QList<DataPoint> &slic
     DataPoint newpoint;
     while(query.next())
     {
-        qDebug()<<"one record";
+//        qDebug()<<"one record";
         // DataPoint* newpoint=new DataPoint();
         newpoint.va=query.value("va").toFloat();
         newpoint.vb=query.value("vb").toFloat();
