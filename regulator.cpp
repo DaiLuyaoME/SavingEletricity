@@ -6,11 +6,14 @@
 #define HAS_BEGUN "hasbegun"
 #define HAS_ENDED "over"
 #define OVER_CONFIRM "overconfirm"
+#define SIMULATION
 Regulator::Regulator(QObject *parent) : QObject(parent)
 {
     openPort();
     timeoutTimer=new QTimer(this);
+    simulationTimer=new QTimer(this);
     connect(timeoutTimer,&QTimer::timeout,this,&Regulator::handleTimeout);
+    connect(simulationTimer,&QTimer::timeout,this,&Regulator::handleSimulationTimeout);
     timeoutCount=0;
     gotEnding=false;
     type=NoneRegulationType;
@@ -45,18 +48,31 @@ void Regulator::sendAmmeterData(DataPoint& data)
 
 void Regulator::beginRegulate()
 {
+#ifndef SIMULATION
     type=WaitForRegulationBegining;
     buffer.clear();
     gotEnding=false;
     regulatorPort->write("BR");
+#else
+    type=WaitForRegulationEnding;
+    emit regulationBegun();
+    simulationTimer->start(3000);
+#endif
 }
 
 void Regulator::beginTest()
 {
+#ifndef SIMULATION
     type=WaitForTestBegining;
     buffer.clear();
     gotEnding=false;
     regulatorPort->write("BT");
+#else
+    type=WaitForTestEnding;
+    emit testBegun();
+    simulationTimer->start(3000);
+#endif
+
 }
 
 //具体的串口产生需要根据实际情况进行调整
@@ -180,4 +196,18 @@ void Regulator::handleTimeout()
             timeoutCount=0;
         }
     }
+}
+
+void Regulator::handleSimulationTimeout()
+{
+    simulationTimer->stop();
+    if(type==WaitForRegulationEnding)
+    {
+        emit regulationOver();
+    }
+    else if(type==WaitForTestEnding)
+    {
+        emit testOver();
+    }
+
 }

@@ -36,11 +36,13 @@ public slots:
     void parseData();//解析下位机传回的数据
     void startTimeout();
     void handleTimeout();
+    void handleSimulationTimeout();
 
 private:
     QSerialPort * regulatorPort;
     QByteArray buffer;
     QTimer * timeoutTimer;
+    QTimer * simulationTimer;
     RegulatorInstructionType type;
     int timeoutCount;
     bool gotEnding;

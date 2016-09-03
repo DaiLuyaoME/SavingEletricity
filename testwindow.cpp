@@ -47,14 +47,8 @@ void TestWindow::testEnd()
 
 void TestWindow::on_beginTest_clicked()
 {
-    TestRecord *newRecord=new TestRecord();
-
-    //this line should be replaced by reading power data
-    //from dataprocessor
-//    newRecord->before=qrand();
-
-//    testRecords.append(*newRecord);
     emit testButtonClicked();
+    qDebug()<<"test button clicked!!!!!!!";
 }
 
 void TestWindow::on_testEnd_clicked()
@@ -66,6 +60,9 @@ void TestWindow::on_clearTestRecords_clicked()
 {
     testRecords.clear();
     testModel.clear();
+    testModel.setHorizontalHeaderItem(0, new QStandardItem(QString("动作前功率/KW")));
+    testModel.setHorizontalHeaderItem(1, new QStandardItem(QString("动作后功率/KW")));
+    testModel.setHorizontalHeaderItem(2, new QStandardItem(QString("节电比率")));
 //    ui->avgNoLabel->setText(QString("0"));
 }
 
@@ -78,9 +75,10 @@ void TestWindow::on_returnBtn_clicked()
 void TestWindow::getResult(datatype powerBefore, datatype powerAfter, float ratio)
 {
     int l=testRecords.length();
-    testModel.setItem(l-1,0,new QStandardItem(QString("%1").arg(powerBefore)));
-    testModel.setItem(l-1,1,new QStandardItem(QString("%1").arg(powerAfter)));
-    testModel.setItem(l-1,2,new QStandardItem(QString("%1").arg(ratio)));
+    qDebug()<<"the lenght of testRecords is "<<l;
+    testModel.setItem(l,0,new QStandardItem(QString("%1").arg(powerBefore)));
+    testModel.setItem(l,1,new QStandardItem(QString("%1").arg(powerAfter)));
+    testModel.setItem(l,2,new QStandardItem(QString("%1").arg(ratio)));
     TestRecord result;
     result.before=powerBefore;
     result.after=powerAfter;
