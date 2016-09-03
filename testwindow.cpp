@@ -23,37 +23,10 @@ TestWindow::~TestWindow()
     delete ui;
 }
 
-void TestWindow::testEnd()
-{
-    TestRecord *latestRecord=&testRecords.last();
-
-    //these twoline should be replaced by reading power data
-    //from dataprocessor
-    latestRecord->ratio=qrand()/(RAND_MAX+0.1);
-    latestRecord->after=latestRecord->before*(1-latestRecord->ratio);
-
-    int l=testRecords.length();
-    testModel.setItem(l-1,0,new QStandardItem(QString("%1").arg(latestRecord->before)));
-    testModel.setItem(l-1,1,new QStandardItem(QString("%1").arg(latestRecord->after)));
-    testModel.setItem(l-1,2,new QStandardItem(QString("%1").arg(latestRecord->ratio)));
-
-    float sum=0;
-    for (int i=0;i<testRecords.length();i++)
-    {
-        sum+=testRecords[i].ratio;
-    }
-//    ui->avgNoLabel->setText(QString("%1").arg(sum/l));
-}
-
 void TestWindow::on_beginTest_clicked()
 {
     emit testButtonClicked();
-    qDebug()<<"test button clicked!!!!!!!";
-}
-
-void TestWindow::on_testEnd_clicked()
-{
-    this->testEnd();
+    qDebug()<<"test button clicked!";
 }
 
 void TestWindow::on_clearTestRecords_clicked()
@@ -63,7 +36,6 @@ void TestWindow::on_clearTestRecords_clicked()
     testModel.setHorizontalHeaderItem(0, new QStandardItem(QString("动作前功率/KW")));
     testModel.setHorizontalHeaderItem(1, new QStandardItem(QString("动作后功率/KW")));
     testModel.setHorizontalHeaderItem(2, new QStandardItem(QString("节电比率")));
-//    ui->avgNoLabel->setText(QString("0"));
 }
 
 void TestWindow::on_returnBtn_clicked()
@@ -76,9 +48,9 @@ void TestWindow::getResult(datatype powerBefore, datatype powerAfter, float rati
 {
     int l=testRecords.length();
     qDebug()<<"the lenght of testRecords is "<<l;
-    testModel.setItem(l,0,new QStandardItem(QString("%1").arg(powerBefore)));
-    testModel.setItem(l,1,new QStandardItem(QString("%1").arg(powerAfter)));
-    testModel.setItem(l,2,new QStandardItem(QString("%1").arg(ratio)));
+    testModel.setItem(l,0,new QStandardItem(QString("%1").arg(powerBefore,0,'f',3)));
+    testModel.setItem(l,1,new QStandardItem(QString("%1").arg(powerAfter,0,'f',3)));
+    testModel.setItem(l,2,new QStandardItem(QString("%1%").arg(ratio*100,0,'f',1)));
     TestRecord result;
     result.before=powerBefore;
     result.after=powerAfter;
@@ -100,6 +72,6 @@ void TestWindow::on_calculateRatioButton_clicked()
         {
             sum+=testRecords[i].ratio;
         }
-        ui->calculateRatioButton->setText(QString("%1").arg(sum/len));
+        ui->averageRatioLabel->setText(QString("%1%").arg(100*sum/len,0,'f',1));
     }
 }
