@@ -5,6 +5,7 @@
 #include <dataprocessor.h>
 #include "qcustomplot.h"
 
+#define NONMODE -1
 #define VMODE 0
 #define IMODE 1
 #define EPMODE 2
@@ -42,6 +43,10 @@ private slots:
     void on_eincBtn_clicked();
 
     void on_edecBtn_clicked();
+
+//    void on_vRadioBtn_clicked();
+
+//    void on_iRadioBtn_clicked();
 
 private:
     DataProcessor *dataPro;

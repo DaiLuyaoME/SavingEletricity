@@ -26,9 +26,7 @@ private:
     QList<TestRecord> testRecords;
 
 private slots:
-    void testEnd();
     void on_beginTest_clicked();
-    void on_testEnd_clicked();
     void on_clearTestRecords_clicked();
     void on_returnBtn_clicked();
     void on_calculateRatioButton_clicked();
