@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>60</x>
-     <y>50</y>
+     <y>120</y>
      <width>121</width>
      <height>61</height>
     </rect>
@@ -49,19 +49,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="testEnd">
-   <property name="geometry">
-    <rect>
-     <x>60</x>
-     <y>130</y>
-     <width>121</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>模拟测试结束</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="returnBtn">
    <property name="geometry">
     <rect>
@@ -75,8 +62,8 @@
     <string>返回</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/return.ico</normaloff>icon/return.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/return.ico</normaloff>:/icon/return.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -128,6 +115,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

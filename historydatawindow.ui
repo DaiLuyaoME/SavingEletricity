@@ -332,8 +332,8 @@
     <string>返回</string>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>icon/return.ico</normaloff>icon/return.ico</iconset>
+    <iconset resource="icon.qrc">
+     <normaloff>:/icon/return.ico</normaloff>:/icon/return.ico</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -398,6 +398,8 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>
