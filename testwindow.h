@@ -5,6 +5,7 @@
 #include <dataprocessor.h>
 #include <QStandardItemModel>
 #include <QMessageBox>
+#include <QCloseEvent>
 struct TestRecord {
     float before,after,ratio;
 };
@@ -18,6 +19,7 @@ class TestWindow : public QWidget
 
 public:
     explicit TestWindow(QWidget *parent = 0,DataProcessor *processor=0);
+    void closeEvent(QCloseEvent *event);
     ~TestWindow();
 private:
     Ui::TestWindow *ui;

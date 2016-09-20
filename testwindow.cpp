@@ -1,10 +1,5 @@
 #include "testwindow.h"
 #include "ui_testwindow.h"
-#include "time.h".
-
-/* TestWindow
- * Author: Wu Yuanhao
- */
 
 TestWindow::TestWindow(QWidget *parent, DataProcessor *processor) :
     QWidget(parent),dataPro(processor),
@@ -15,7 +10,13 @@ TestWindow::TestWindow(QWidget *parent, DataProcessor *processor) :
     testModel.setHorizontalHeaderItem(1, new QStandardItem(QString("动作后功率/KW")));
     testModel.setHorizontalHeaderItem(2, new QStandardItem(QString("节电比率")));
     ui->testTable->setModel(&testModel);
-    qsrand(time(NULL));
+}
+
+void TestWindow::closeEvent(QCloseEvent *event)
+{
+    dataPro->openMonitor();
+    qDebug()<<"test window closed";
+    event->accept();
 }
 
 TestWindow::~TestWindow()
