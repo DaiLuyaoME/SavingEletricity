@@ -47,7 +47,7 @@ DataProcessor::~DataProcessor()
 
 }
 /*
-*通过电表ammeter读取数据
+*通过电表ammeter读取数据 队列头是最新数据
 */
 void DataProcessor::getData()
 {
@@ -128,6 +128,9 @@ void DataProcessor::monitorAction()
     {
         return;
     }
+    DataPoint tempminpowerdatapoint = getMinPowerDataPoint(MonitorTimeInterval);
+    regulator->sendVoltageAtMinPower(tempminpowerdatapoint,realTimeDataBuffer.at(0));
+    /*
     regulator->sendAmmeterData(realTimeDataBuffer.first());
     datatype templastpower = realTimeDataBuffer.first().eps;//计算有功功率
     datatype temppowerporprotion = 0.0;
@@ -136,7 +139,7 @@ void DataProcessor::monitorAction()
     if(templastpower>(AveragePower+temppowerporprotion)||templastpower<(AveragePower-temppowerporprotion))
     {
         regulatorAction();
-    }
+    }*/
 }
 /*
 *timeLength:计算时间 单位：second
@@ -257,7 +260,7 @@ void DataProcessor::regulatorCount()
 {
     int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
     DataPoint tempminpowerdatapoint = getMinPowerDataPoint(counttime);
-    regulator->sendVoltageAtMinPower(tempminpowerdatapoint);
+    regulator->sendVoltageAtMinPower(tempminpowerdatapoint,realTimeDataBuffer.at(0));
     emit monitorFinish();
 }
 /*找到当前功率最低点*/

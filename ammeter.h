@@ -12,6 +12,7 @@
 #include <datapoint.h>
 #include <QTimer>
 #include <QtDebug>
+//#define SIMULATION
 struct instruction
 {
     QByteArray voltageInstruction;
@@ -67,7 +68,9 @@ public slots:
     void getApparentPower();
     void getPowerFactor();
     void startReadTimer();
+#ifdef SIMULATION
     void changeCoeffcient(float value);
+#endif
 
 private:
     DataPoint latestData;

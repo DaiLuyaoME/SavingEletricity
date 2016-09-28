@@ -6,72 +6,53 @@
 #define HAS_BEGUN "hasbegun"
 #define HAS_ENDED "over"
 #define OVER_CONFIRM "overconfirm"
-#define SIMULATION
 Regulator::Regulator(QObject *parent) : QObject(parent)
 {
     openPort();
     timeoutTimer=new QTimer(this);
-    simulationTimer=new QTimer(this);
     connect(timeoutTimer,&QTimer::timeout,this,&Regulator::handleTimeout);
+    QObject::connect(this,SIGNAL(dataOver()),this,SLOT(dataClear()));
+#ifdef SIMULATION
+    simulationTimer=new QTimer(this);
     connect(simulationTimer,&QTimer::timeout,this,&Regulator::handleSimulationTimeout);
+#endif
     timeoutCount=0;
     gotEnding=false;
-    type=NoneRegulationType;
+    type=IDLE;
 }
 
-void Regulator::sendVoltageAtMinPower(DataPoint &voltage)
+void Regulator::sendVoltageAtMinPower(DataPoint voltage,DataPoint newData)
 {
-    QString temp=QString("PMVA%1PMVB%2PMVC%3").arg(voltage.va,0,'f',1).arg(voltage.vb,0,'f',1).arg(voltage.vc,0,'f',1);
-    regulatorPort->write(temp.toLocal8Bit()); 
-    qDebug()<<"the voltage at minpower is "<<temp;
-    qDebug()<<"data to write "<<temp.toLocal8Bit(); 
-
+    char checkcode;
+    DataOrder.head = QString("2aeb").toLocal8Bit();
+    DataOrder.head = QByteArray::fromHex(DataOrder.head);
+    DataOrder.address = QString("02").toLocal8Bit();
+    DataOrder.address = QByteArray::fromHex(DataOrder.address);
+    DataOrder.commandtype = QString("05").toLocal8Bit();
+    DataOrder.commandtype = QByteArray::fromHex(DataOrder.commandtype);
+    DataOrder.datalength = QString("18").toLocal8Bit();
+    DataOrder.datalength = QByteArray::fromHex(DataOrder.datalength);
+    checkcode = dataIntoString(DataOrder.data,voltage,newData);
+    checkcode ^= 0x02^0x05^0x18;
+    DataOrder.checkcode.append(checkcode);
+    DataOrder.tail = QString("ad").toLocal8Bit();
+    DataOrder.tail = QByteArray::fromHex(DataOrder.tail);
+    //发送指令
+    sendInstruction(DataOrder);
+    timeoutTimer->start(TIMEOUT_INTERVAL);//开始超时计时
+    //状态改变 发送消息
+    type = WaitForDataCheckBack;
 
 }
 
-///数据不要忘了加互感器参数！！！！
-void Regulator::sendAmmeterData(DataPoint& data)
-{
-    QString temp=QString("VA%1VB%2VC%3").arg(data.va,0,'f',1).arg(data.vb,0,'f',1).arg(data.vc,0,'f',1);
-    qDebug()<<"voltage:"<<temp;
-    qDebug()<<"voltage data to write:"<<temp.toLocal8Bit();
-    regulatorPort->write(temp.toLocal8Bit());
-    temp=QString("IA%1IB%2IC%3").arg(data.ia,0,'f',3).arg(data.ib,0,'f',3).arg(data.ic,0,'f',3);
-    qDebug()<<"current:"<<temp;
-    qDebug()<<"current data to write:"<<temp.toLocal8Bit();
-    regulatorPort->write(temp.toLocal8Bit());
-    temp=QString("PA%1PB%2PC%3PS%4").arg(data.epa,0,'f',3).arg(data.epb,0,'f',3).arg(data.epc,0,'f',3).arg(data.eps,0,'f',3);
-    qDebug()<<"effective power："<<temp;
-    qDebug()<<"effective power data to write:"<<temp.toLocal8Bit();
-    regulatorPort->write(temp.toLocal8Bit());
-}
 
 void Regulator::beginRegulate()
 {
-#ifndef SIMULATION
-    type=WaitForRegulationBegining;
-    buffer.clear();
-    gotEnding=false;
-    regulatorPort->write("BR");
-#else
-    type=WaitForRegulationEnding;
-    emit regulationBegun();
-    simulationTimer->start(3000);
-#endif
+
 }
 
 void Regulator::beginTest()
 {
-#ifndef SIMULATION
-    type=WaitForTestBegining;
-    buffer.clear();
-    gotEnding=false;
-    regulatorPort->write("BT");
-#else
-    type=WaitForTestEnding;
-    emit testBegun();
-    simulationTimer->start(3000);
-#endif
 
 }
 
@@ -85,6 +66,11 @@ void Regulator::openPort()
         if(portDescription.contains(QString("USB")))
         {
             regulatorPort->setPort(info);
+        }
+        else
+        {
+            emit regulatorPortNotFound();
+            return;
         }
 
     }
@@ -103,61 +89,178 @@ void Regulator::ack()
 
 }
 
+void Regulator::simulationSaving()
+{
+    regulatorinstruction temporder;
+    QString *tempdata;
+    char checkcode;
+    temporder.head = QString("2aeb").toLocal8Bit();
+    temporder.head = QByteArray::fromHex(temporder.head);
+    temporder.address = QString("02").toLocal8Bit();
+    temporder.address = QByteArray::fromHex(temporder.address);
+    temporder.commandtype = QString("02").toLocal8Bit();
+    temporder.commandtype = QByteArray::fromHex(temporder.commandtype);
+    temporder.datalength = QString("01").toLocal8Bit();
+    temporder.datalength = QByteArray::fromHex(temporder.datalength);
+    temporder.data = QString("00").toLocal8Bit();
+    temporder.data = QByteArray::fromHex(temporder.data);
+    temporder.checkcode = QString("01").toLocal8Bit();
+    temporder.checkcode = QByteArray::fromHex(temporder.checkcode);
+    temporder.tail = QString("ad").toLocal8Bit();
+    temporder.tail = QByteArray::fromHex(temporder.tail);
+    //发送指令
+    sendInstruction(temporder);
+    timeoutTimer->start(TIMEOUT_INTERVAL);
+    //状态改变 发送消息
+    type = WaitForSimulationBack;
+
+}
+
+void Regulator::shutDownHardware()
+{
+    regulatorinstruction temporder;
+    QString *tempdata;
+    char checkcode;
+    temporder.head = QString("2aeb").toLocal8Bit();
+    temporder.head = QByteArray::fromHex(temporder.head);
+    temporder.address = QString("02").toLocal8Bit();
+    temporder.address = QByteArray::fromHex(temporder.address);
+    temporder.commandtype = QString("03").toLocal8Bit();
+    temporder.commandtype = QByteArray::fromHex(temporder.commandtype);
+    temporder.datalength = QString("01").toLocal8Bit();
+    temporder.datalength = QByteArray::fromHex(temporder.datalength);
+    temporder.data = QString("00").toLocal8Bit();
+    temporder.data = QByteArray::fromHex(temporder.data);
+    temporder.checkcode = QString("00").toLocal8Bit();
+    temporder.checkcode = QByteArray::fromHex(temporder.checkcode);
+    temporder.tail = QString("ad").toLocal8Bit();
+    temporder.tail = QByteArray::fromHex(temporder.tail);
+    //发送指令
+    sendInstruction(temporder);
+    timeoutTimer->start(TIMEOUT_INTERVAL);
+    //状态改变 发送消息
+    type = WaitForStartBack;
+
+}
+
+void Regulator::startHardware()
+{
+    regulatorinstruction temporder;
+    QString *tempdata;
+    char checkcode;
+    temporder.head = QString("2aeb").toLocal8Bit();
+    temporder.head = QByteArray::fromHex(temporder.head);
+    temporder.address = QString("02").toLocal8Bit();
+    temporder.address = QByteArray::fromHex(temporder.address);
+    temporder.commandtype = QString("04").toLocal8Bit();
+    temporder.commandtype = QByteArray::fromHex(temporder.commandtype);
+    temporder.datalength = QString("01").toLocal8Bit();
+    temporder.datalength = QByteArray::fromHex(temporder.datalength);
+    temporder.data = QString("00").toLocal8Bit();
+    temporder.data = QByteArray::fromHex(temporder.data);
+    temporder.checkcode = QString("07").toLocal8Bit();
+    temporder.checkcode = QByteArray::fromHex(temporder.checkcode);
+    temporder.tail = QString("ad").toLocal8Bit();
+    temporder.tail = QByteArray::fromHex(temporder.tail);
+    //发送指令
+    sendInstruction(temporder);
+    timeoutTimer->start(TIMEOUT_INTERVAL);
+    //状态改变 发送消息
+    type = WaitForShutDownBack;
+
+}
+
 void Regulator::sendVoltageToRegulator(DataPoint &data)
 {
 
 }
-
+/*
+ * 解析数据 主要是收到回复的 “OK" "ER"要重发
+*/
 void Regulator::parseData()
 {
-    buffer.append(regulatorPort->readAll());
-    if(buffer.size()>MAX_BUFFER_SIZE)
+    QByteArray tempbuffer;
+    //qDebug()<<"before readall"<<regulatorPort->peek(2);
+    tempbuffer.append(regulatorPort->readAll());
+    //qDebug()<<"after readall"<<regulatorPort->peek(2);
+    switch (r_state)
     {
-        buffer.clear();
+    case RIDEL:
+        if(tempbuffer.contains("O"))
+        {
+            r_state = RM_O;
+        }
+        else if(tempbuffer.contains("E"))
+        {
+            r_state = RM_E;
+        }
+        break;
+    case RM_O:
+        if(tempbuffer.contains("K"))
+        {
+            r_state = RIDEL;
+            switch (type)
+            {
+            case WaitForStartBack:
+                //emit testBegun();
+                type = IDLE;
+                timeoutTimer->stop();//停止延时计时
+                break;
+            case WaitForShutDownBack:
+                type = IDLE;
+                //emit regulationBegun();
+                timeoutTimer->stop();//停止延时计时
+                break;
+            case WaitForSimulationBack:
+                //emit regulationOver();
+                type = IDLE;
+                timeoutTimer->stop();
+                break;
+            case WaitForDataCheckBack:
+                emit dataOver();
+                type = IDLE;
+                timeoutTimer->stop();
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    case RM_E://回复ER 重发
+        if(tempbuffer.contains("R"))
+        {
+            r_state = RIDEL;
+            switch (type)
+            {
+            case WaitForSimulationBack:
+                //emit regulationOver();
+                timeoutTimer->stop();//停止延时计时
+                simulationSaving();
+                break;
+            case WaitForStartBack:
+                //emit testOver();
+                timeoutTimer->stop();//停止延时计时
+                startHardware();
+                break;
+            case WaitForShutDownBack:
+                //
+                timeoutTimer->stop();
+                shutDownHardware();
+                break;
+            case WaitForDataCheckBack:
+                //
+                timeoutTimer->stop();
+                sendInstruction(DataOrder);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    default:
+        break;
     }
-    else
-    {
-        if(buffer.contains("OK"))
-        {
-            timeoutCount=0;
-            timeoutTimer->stop();
-            buffer.clear();
-            if(type==WaitForRegulationBegining)
-            {
-                emit regulationBegun();
-                type=WaitForRegulationEnding;
-            }
-            else if(type==WaitForTestBegining)
-            {
-                emit testBegun();
-                type=WaitForTestEnding;
-            }
-        }
-        else if(buffer.contains("ER"))
-        {
-            if(gotEnding==false)
-            {
-                gotEnding=true;
-                emit regulationOver();
-            }
-            else
-            {
 
-            }
-        }
-        else if(buffer.contains("ET"))
-        {
-            if(gotEnding==false)
-            {
-                gotEnding=true;
-                emit testOver();
-            }
-            else
-            {
-
-            }
-        }
-    }
 }
 
 void Regulator::startTimeout()
@@ -170,34 +273,26 @@ void Regulator::startTimeout()
 
 void Regulator::handleTimeout()
 {
-    timeoutTimer->stop();
     ++timeoutCount;
-    if (type==WaitForRegulationBegining)
+    if(timeoutCount >= MAX_TIMEOUT_COUNT)
     {
-        if (timeoutCount<MAX_TIMEOUT_COUNT)
-        {
-            beginRegulate();
-        }
-        else
-        {
-            emit regulatorError();
-            timeoutCount=0;
-        }
+        emit regulatorTIMEOUT();
+        timeoutTimer->stop();
     }
-    else if(type==WaitForTestBegining)
-    {
-        if (timeoutCount<MAX_TIMEOUT_COUNT)
-        {
-            beginTest();
-        }
-        else
-        {
-            emit regulatorError();
-            timeoutCount=0;
-        }
-    }
+
 }
 
+void Regulator::dataClear()
+{
+    DataOrder.head.clear();
+    DataOrder.address.clear();
+    DataOrder.commandtype.clear();
+    DataOrder.datalength.clear();
+    DataOrder.data.clear();
+    DataOrder.checkcode.clear();
+    DataOrder.tail.clear();
+}
+#ifdef SIMULATION
 void Regulator::handleSimulationTimeout()
 {
     simulationTimer->stop();
@@ -211,3 +306,88 @@ void Regulator::handleSimulationTimeout()
     }
 
 }
+#endif
+void Regulator::sendInstruction(regulatorinstruction order)
+{
+    regulatorPort->write(order.head);
+    regulatorPort->write(order.address);
+    regulatorPort->write(order.commandtype);
+    regulatorPort->write(order.datalength);
+    regulatorPort->write(order.data);
+    regulatorPort->write(order.checkcode);
+    regulatorPort->write(order.tail);
+}
+//返回data异或
+char Regulator::dataIntoString(QByteArray &data, DataPoint &voltage, DataPoint &newdata)
+{
+    int tempbuffer;
+    char checkcode = 0;
+    tempbuffer = int(newdata.va * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode = data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.vb * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.vc * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.ia * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.ib * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.ic * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.epa);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.epb);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(newdata.epc);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(voltage.va * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(voltage.vb * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+    tempbuffer = int(voltage.vc * 10);//
+    data.append(((tempbuffer&0xff00)>>8));
+    checkcode ^= data.at(data.size()-1);
+    data.append(((tempbuffer&0xff)));
+    checkcode ^= data.at(data.size()-1);
+
+    return checkcode;
+    //qDebug<<"data is "<<(unsigned char)data.data();
+}
+
+
+
+
+

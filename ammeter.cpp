@@ -8,7 +8,6 @@
 #define BYTE_NUMBER_APPRENT_POWER 28
 #define BYTE_NUMBER_POWER_FACTOR 24
 #define MAX_FAILURE_COUNT 15
-#define SIMULATION
 #ifndef SIMULATION
 Ammeter::Ammeter(QObject *parent) : QObject(parent)
 {

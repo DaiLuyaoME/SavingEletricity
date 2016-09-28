@@ -12,14 +12,4 @@ struct DataPoint
     datatype pfa,pfb,pfc,pfs;   //功率因素（power factor）
 };
 
-enum RegulatorInstructionType
-{
-    NoneRegulationType=0,
-    WaitForRegulationBegining,
-    WaitForRegulationEnding,
-    WaitForTestBegining,
-    WaitForTestEnding,
-    OpenPort
-
-};
 #endif // DATAPOINT_H
