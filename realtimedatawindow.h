@@ -34,8 +34,8 @@ private slots:
     void on_apRadioBtn_toggled(bool checked);
     void on_pfRadioBtn_toggled(bool checked);
     void on_horizontalSlider_sliderReleased();
-
     void on_returnBtn_clicked();
+
 
 private:
     int mode,range,removeIdx,addIdx;

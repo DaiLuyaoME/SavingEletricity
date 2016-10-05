@@ -4,6 +4,7 @@
 #define GETDATATIMEDEFAULT      1//默认读取数据间隔 单位：second
 #define SAVEDATATIMEDEFALT      1//默认存储数据间隔 单位：second
 #define MONITORTIMEDEFALT       10//默认监控计算间隔 单位：second
+#define PROPORTIONDEFAULT       4.0//默认调节限制比例
 #define ERROR                   -1//报错回传参数
 
 DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
@@ -14,31 +15,31 @@ DataProcessor::DataProcessor(QObject *parent) : QObject(parent)
 	regulator  = new Regulator(this);//下位机实例
     saveDataTimer = new QTimer(this);//存储数据计时器
     monitorTimer = new QTimer(this);//电表监控计时器
-    RegulatorTime = new QTime();//下位机计时
     /*参数初始化*/
+    ProporitonLimit       = PROPORTIONDEFAULT;
     AveragePower          = 0.0;
     TotalPower            = 0.0;
-
     GetDataTimeInterval   = GETDATATIMEDEFAULT;
     SaveDataTimeInterval  = SAVEDATATIMEDEFALT;
     MonitorTimeInterval   = MONITORTIMEDEFALT;
     /*读取数据*/
     QObject::connect(ammeter,SIGNAL(getDataOver()),this,SLOT(getData()));
     QObject::connect(ammeter,SIGNAL(ammeterError()),this,SLOT(ammeterGetDataError()));
+    QObject::connect(ammeter,SIGNAL(ammeterNotFound()),this,SLOT(ammeterGetDataError()));
+    if(ammeter->isAmmeterFound())AmmeterError=false;
+    if(!ammeter->isAmmeterFound())ammeterGetDataError();
+    if(regulator->isRegulatorFound())RegulatorError=false;
+    if(!regulator->isRegulatorFound())regulatorConnectError();
     /*存储数据*/
     QObject::connect(saveDataTimer,SIGNAL(timeout()),this,SLOT(saveData()));
     saveDataTimer->start(SaveDataTimeInterval*1000);//默认10s一次
     /*监控一次*/
     QObject::connect(monitorTimer,SIGNAL(timeout()),this,SLOT(monitorAction()));
     monitorTimer->start(MonitorTimeInterval*1000);//默认600s一次
-   /*regulator 回传电压值*/
-    QObject::connect(regulator,SIGNAL(regulationBegun()),this,SLOT(regulatorStart()));
-    QObject::connect(regulator,SIGNAL(regulationOver()),this,SLOT(regulatorCount()));
-    QObject::connect(regulator,SIGNAL(regulatorError()),this,SLOT(regulatorActionError()));
-
-    QObject::connect(regulator,SIGNAL(testBegun()),this,SLOT(testStart()));
-    QObject::connect(regulator,SIGNAL(testOver()),this,SLOT(testCount()));
-
+   /*regulator 软关机开始，节电测试开始*/
+    QObject::connect(regulator,SIGNAL(shutDownBack()),this,SLOT(testStart()));
+    QObject::connect(regulator,SIGNAL(shutDownOver()),this,SLOT(testCount()));
+    QObject::connect(regulator,SIGNAL(regulatorError()),this,SLOT(regulatorConnectError()));
 
 
 }
@@ -69,8 +70,10 @@ void DataProcessor::getData()
 */
 void DataProcessor::ammeterGetDataError()
 {
+    qDebug()<<"dp am er";
     saveDataTimer->stop();
     monitorTimer->stop();
+    AmmeterError = true;
     emit ammeterError();
 }
 
@@ -80,7 +83,6 @@ void DataProcessor::ammeterGetDataError()
  */
 DataPoint DataProcessor::getLastData()
 {
-
     return realTimeDataBuffer.first();
 }
 /*
@@ -120,26 +122,17 @@ void DataProcessor::saveData()
 
 }
 /*
- * 固定时间间隔进行监控，满足一定条件触regulator调节
+ * 固定时间间隔进行监控，发送指定的数据
 */
 void DataProcessor::monitorAction()
 {
     if(realTimeDataBuffer.isEmpty())
     {
+        emit actionError();
         return;
     }
-    DataPoint tempminpowerdatapoint = getMinPowerDataPoint(MonitorTimeInterval);
-    regulator->sendVoltageAtMinPower(tempminpowerdatapoint,realTimeDataBuffer.at(0));
-    /*
-    regulator->sendAmmeterData(realTimeDataBuffer.first());
-    datatype templastpower = realTimeDataBuffer.first().eps;//计算有功功率
-    datatype temppowerporprotion = 0.0;
-    AveragePower = getAveragePower(MonitorTimeInterval);
-    temppowerporprotion = AveragePower * ProporitonLimit;
-    if(templastpower>(AveragePower+temppowerporprotion)||templastpower<(AveragePower-temppowerporprotion))
-    {
-        regulatorAction();
-    }*/
+    MinPowerDataPoint = getMinPowerDataPoint(MonitorTimeInterval);
+    regulator->sendThershold((int)ProporitonLimit,MinPowerDataPoint,realTimeDataBuffer.at(0));
 }
 /*
 *timeLength:计算时间 单位：second
@@ -177,7 +170,7 @@ datatype DataProcessor::getMinPower(int timeLength)
     int   counttime = 0;//计数个数
     int   counter   = 0;//计数
 
-    if(realTimeDataBuffer.isEmpty())//操作限定在读取数据之后
+    if(realTimeDataBuffer.isEmpty())//保证有数据
     {
         emit actionError();
         return 0.0;
@@ -195,12 +188,17 @@ datatype DataProcessor::getMinPower(int timeLength)
 */
 void DataProcessor::regulatorAction()
 {
-    regulator->beginRegulate();
+    if(realTimeDataBuffer.isEmpty())
+    {
+        emit actionError();
+        return;
+    }
+    regulator->sendThershold((int)ProporitonLimit,MinPowerDataPoint,realTimeDataBuffer.at(0));
 }
 
 void DataProcessor::testAction()
 {
-    regulator->beginTest();//开始测试
+    regulator->shutDownHardware();//下位机关机，开始测试
 }
 
 void DataProcessor::closeMonitor()
@@ -214,26 +212,19 @@ void DataProcessor::openMonitor()
     monitorTimer->start(MonitorTimeInterval*1000);//开启监控
 
 }
-/*
- * 调节函数回传开始动作 开始计时
-*/
-void DataProcessor::regulatorStart()
+
+void DataProcessor::regulatorConnectError()
 {
-    emit monitorBegun();
-    RegulatorTime->restart();
-}
-/*
- * 下位机错误信号
-*/
-void DataProcessor::regulatorActionError()
-{
-    RegulatorTime->elapsed();
+    RegulatorError = true;
+    monitorTimer->stop();
     emit regulatorError();
 }
+
 
 void DataProcessor::testStart()
 {
 //    monitorTimer->stop();//停止监控计时
+
     PowerBeforeTest = realTimeDataBuffer.first().eps;
 }
 
@@ -243,25 +234,15 @@ void DataProcessor::testCount()
     if(PowerBeforeTest != 0.0)
     {
         SavingRate = (PowerBeforeTest - PowerAfterTest) / PowerBeforeTest;
+        emit sendTestResult(PowerBeforeTest,PowerAfterTest,SavingRate);
     }
     else
     {
         SavingRate = 0.0;
         emit actionError();
     }
-    emit sendTestResult(PowerBeforeTest,PowerAfterTest,SavingRate);
-//    monitorTimer->start(MonitorTimeInterval*1000);//重新开启监控 默认600s一次
-}
-/*
- * 调节函数结束
- * 给下位机返回调控时间内最低功率点的数据点
- */
-void DataProcessor::regulatorCount()
-{
-    int counttime = RegulatorTime->elapsed() / 1000;//计算间隔时间
-    DataPoint tempminpowerdatapoint = getMinPowerDataPoint(counttime);
-    regulator->sendVoltageAtMinPower(tempminpowerdatapoint,realTimeDataBuffer.at(0));
-    emit monitorFinish();
+    regulator->startHardware();
+
 }
 /*找到当前功率最低点*/
 DataPoint DataProcessor::getMinPowerDataPoint(int timeLength)
@@ -296,6 +277,16 @@ void DataProcessor::rewritePowerMessage(datatype &ap, datatype &tp, datatype &up
         }
     }
 
+}
+
+bool DataProcessor::isAmmeterError()
+{
+    return AmmeterError;
+}
+
+bool DataProcessor::isRegulatorError()
+{
+    return RegulatorError;
 }
 
 /*

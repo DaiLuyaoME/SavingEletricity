@@ -24,7 +24,8 @@ private slots:
     void on_realtimeButton_clicked();
     void on_testButton_clicked();
     void on_historyButton_clicked();
-
+    void ammeterError();
+    void regulatorError();
 private:
     Ui::MainWindow *ui;
     RealTimeDataWindow* realTimeWin;

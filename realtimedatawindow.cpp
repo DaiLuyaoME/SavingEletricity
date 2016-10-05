@@ -1,5 +1,6 @@
 #include "realtimedatawindow.h"
 #include "ui_realtimedatawindow.h"
+#include <QMessageBox>
 
 RealTimeDataWindow::RealTimeDataWindow(QWidget *parent,DataProcessor *processor) :
     QWidget(parent),
@@ -306,3 +307,5 @@ void RealTimeDataWindow::on_returnBtn_clicked()
 {
     this->hide();
 }
+
+

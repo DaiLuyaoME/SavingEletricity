@@ -26,6 +26,8 @@ public:
     void dataSlicer(QDateTime begin,QDateTime end,QList<DataPoint> &datapoints, int dataamount);
 //    float getSavingRate();//结算节电率
     void rewritePowerMessage(datatype &ap, datatype &tp, datatype &up, int timeLength);//average total up
+    bool isAmmeterError();
+    bool isRegulatorError();
 signals:
     void ammeterError();//电表故障
     void dataBaseError();//数据库故障
@@ -41,15 +43,13 @@ public slots:
     void testAction();//节电测试
     void closeMonitor();
     void openMonitor();
+    void regulatorConnectError();
 
 private slots:
     void getData();//UI通过dataprocessor获得数据
     void ammeterGetDataError();//电表读数错误
     void saveData();//将数据存储到database
     void monitorAction();//每隔一段时间进行监控操作
-    void regulatorCount();//计算间隔时间内的数据
-    void regulatorStart();//下位机动作后开始计时
-    void regulatorActionError();//下位机动作错误
     void testStart();//测试开始
     void testCount();//测试结算
 
@@ -58,8 +58,7 @@ private:
     Regulator *regulator;//下位机动作实例
     Ammeter *ammeter;//电表实例
     QTimer *saveDataTimer;//默认每10秒发动一次
-    QTimer *monitorTimer;//默认每10分钟发动一次
-    QTime *RegulatorTime;//regulator调控及时   
+    QTimer *monitorTimer;//默认每10分钟发动一次 
     QList<DataPoint> realTimeDataBuffer;//1point/1s,length=3600
     datatype getMinPowerVoltage(int timeLength);//找到最低功率点的电压值
     datatype AveragePower;//当前监控点的平均功率
@@ -72,7 +71,9 @@ private:
     int   GetDataTimeInterval;//采样数据间隔 单位：Second
     int   SaveDataTimeInterval;//存储数据间隔  单位：Second
     int   MonitorTimeInterval;//监控数据间隔 单位：Second
-
+    DataPoint MinPowerDataPoint;//最小功率数据点
+    bool AmmeterError;
+    bool RegulatorError;
 
 };
 

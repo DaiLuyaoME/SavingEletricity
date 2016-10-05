@@ -9,22 +9,29 @@
 #define BYTE_NUMBER_POWER_FACTOR 24
 #define MAX_FAILURE_COUNT 15
 #ifndef SIMULATION
+#define QT_NO_DEBUG_OUTPUT
+
 Ammeter::Ammeter(QObject *parent) : QObject(parent)
 {
     coefficient=6;
+    timeout=new QTimer(this);
+    readTimer=new QTimer(this);
     initPort();
     initInstruction();
     initConnections();
-    timeout=new QTimer(this);
-    readTimer=new QTimer(this);
     connect(timeout,&QTimer::timeout,this,&Ammeter::handleTimeOut);
     connect(readTimer,&QTimer::timeout,this,&Ammeter::getVoltage);
-    startReadTimer();
+
 }
 
 DataPoint Ammeter::getData()
 {
     return latestData;
+}
+
+bool Ammeter::isAmmeterFound()
+{
+    return ammeterfound;
 }
 
 void Ammeter::initPort()
@@ -33,21 +40,28 @@ void Ammeter::initPort()
     foreach (const QSerialPortInfo &info,QSerialPortInfo::availablePorts())
     {
         QString portDescription=info.description();
-        if(portDescription.contains(QString("USB")))
+        if(portDescription.contains(QString("Port")))
         {
             portReadAndWrite->setPort(info);
+            ammeterfound = true;
+            qDebug()<<"ammeter found";
+            portReadAndWrite->setBaudRate(QSerialPort::Baud9600);
+            portReadAndWrite->setDataBits(QSerialPort::Data8);
+            portReadAndWrite->setParity(QSerialPort::EvenParity);
+            portReadAndWrite->setStopBits(QSerialPort::OneStop);
+            portReadAndWrite->setFlowControl(QSerialPort::NoFlowControl);
+            portReadAndWrite->open(QIODevice::ReadWrite);
+            connect(portReadAndWrite,&QSerialPort::readyRead,this,&Ammeter::parseData);
+            connect(portReadAndWrite,&QSerialPort::bytesWritten,this,&Ammeter::startTimeoutTimer);
+            readTimer->start(1000);
+            return;
         }
-
     }
+    ammeterfound = false;
+    emit ammeterNotFound();
+    qDebug()<<"ammeter not found";
+    return;
 
-    portReadAndWrite->setBaudRate(QSerialPort::Baud9600);
-    portReadAndWrite->setDataBits(QSerialPort::Data8);
-    portReadAndWrite->setParity(QSerialPort::EvenParity);
-    portReadAndWrite->setStopBits(QSerialPort::OneStop);
-    portReadAndWrite->setFlowControl(QSerialPort::NoFlowControl);
-    portReadAndWrite->open(QIODevice::ReadWrite);
-    connect(portReadAndWrite,&QSerialPort::readyRead,this,&Ammeter::parseData);
-    connect(portReadAndWrite,&QSerialPort::bytesWritten,this,&Ammeter::startTimeoutTimer);
 
 }
 
@@ -110,8 +124,8 @@ void Ammeter::parseData()
         buffer.append(portReadAndWrite->readAll());
         if(buffer.size()==BYTE_NUMBER_VOLTAGE)
         {
-            qDebug()<<"read type is "<<m_readType<<endl;
-            qDebug()<<"the number of bytes that have been read is "<<buffer.size()<<endl;
+            //qDebug()<<"read type is "<<m_readType<<endl;
+            //qDebug()<<"the number of bytes that have been read is "<<buffer.size()<<endl;
             timeout->stop();
             failureCount=0;
             QByteArray AL=buffer.mid(14,1);
@@ -123,9 +137,9 @@ void Ammeter::parseData()
             QByteArray CL=buffer.mid(18,1);
             QByteArray CH=buffer.mid(19,1);
             datatype C=(minus33(CH.toHex()))*10+minus33(CL.toHex())*0.1;
-            qDebug()<<"CL is "<<CL.toHex()<<endl;
-            qDebug()<<"CH is "<<CH.toHex()<<endl;
-            qDebug()<<"get voltage data A "<<A<<endl;
+            //qDebug()<<"CL is "<<CL.toHex()<<endl;
+            //qDebug()<<"CH is "<<CH.toHex()<<endl;
+            //qDebug()<<"get voltage data A "<<A<<endl;
             latestData.va=A;
             latestData.vb=B;
             latestData.vc=C;
@@ -230,7 +244,7 @@ void Ammeter::parseData()
             QByteArray CM=buffer.mid(24,1);
             QByteArray CH=buffer.mid(25,1);
             datatype C=(minus33(CH.toHex()))+(minus33(CM.toHex()))*0.01+(minus33(CL.toHex()))*0.0001;
-            qDebug()<<"get reactivePower data A "<<A<<endl;
+            //qDebug()<<"get reactivePower data A "<<A<<endl;
             latestData.rps=coefficient*S;
             latestData.rpa=coefficient*A;
             latestData.rpb=coefficient*B;
@@ -267,7 +281,7 @@ void Ammeter::parseData()
             QByteArray CM=buffer.mid(24,1);
             QByteArray CH=buffer.mid(25,1);
             datatype C=(minus33(CH.toHex()))+(minus33(CM.toHex()))*0.01+(minus33(CL.toHex()))*0.0001;
-            qDebug()<<"get apparentPower data A "<<A<<endl;
+            //qDebug()<<"get apparentPower data A "<<A<<endl;
             latestData.aps=coefficient*S;
             latestData.apa=coefficient*A;
             latestData.apb=coefficient*B;
@@ -300,7 +314,7 @@ void Ammeter::parseData()
             QByteArray CL=buffer.mid(20,1);
             QByteArray CH=buffer.mid(21,1);
             datatype C=(minus33(CH.toHex()))*0.1+(minus33(CL.toHex()))*0.001;
-            qDebug()<<"get powerFactor data A "<<A<<endl;
+            //qDebug()<<"get powerFactor data A "<<A<<endl;
             latestData.pfs=S;
             latestData.pfa=A;
             latestData.pfb=B;
@@ -383,61 +397,60 @@ void Ammeter::handleTimeOut()
 
 void Ammeter::getVoltage()
 {
-    qDebug()<<"before read voltage"<<endl;
+   // qDebug()<<"before read voltage"<<endl;
     readTimer->stop();
     m_readType=ReadVoltage;
     portReadAndWrite->write(m_instruction.voltageInstruction);
-    qDebug()<<"fetch voltage"<<endl;
+    //qDebug()<<"fetch voltage"<<endl;
 }
 
 void Ammeter::getCurrent()
 {
-    qDebug()<<"before read current"<<endl;
+   // qDebug()<<"before read current"<<endl;
     m_readType=ReadCurrent;
     portReadAndWrite->write(m_instruction.currentInstruction);
-    qDebug()<<"fetch current"<<endl;
+    //qDebug()<<"fetch current"<<endl;
 }
 
 void Ammeter::getEffectivePower()
 {
-    qDebug()<<"before read effectivePower"<<endl;
+   // qDebug()<<"before read effectivePower"<<endl;
     m_readType=ReadEffectivePower;
     portReadAndWrite->write(m_instruction.effectivePowerInstruction);
-    qDebug()<<"fetch effective Power"<<endl;
+    //qDebug()<<"fetch effective Power"<<endl;
 
 }
 
 void Ammeter::getReactivePower()
 {
-    qDebug()<<"before read reactivePower"<<endl;
+    //qDebug()<<"before read reactivePower"<<endl;
     m_readType=ReadReactivePower;
     portReadAndWrite->write(m_instruction.reactivePowerInstruction);
-    qDebug()<<"fetch reactive Power"<<endl;
+   // qDebug()<<"fetch reactive Power"<<endl;
 
 }
 
 void Ammeter::getApparentPower()
 {
-    qDebug()<<"before read apparentPower"<<endl;
+   // qDebug()<<"before read apparentPower"<<endl;
     m_readType=ReadApparentPower;
     portReadAndWrite->write(m_instruction.apparentPowerInstruction);
-    qDebug()<<"fetch Apparent Power"<<endl;
+   // qDebug()<<"fetch Apparent Power"<<endl;
 
 }
 
 void Ammeter::getPowerFactor()
 {
-    qDebug()<<"before read powerFactor"<<endl;
+   // qDebug()<<"before read powerFactor"<<endl;
     m_readType=ReadPowerFactor;
     portReadAndWrite->write(m_instruction.powerFactorInstruction);
-    qDebug()<<"fetch power factor"<<endl;
+    //qDebug()<<"fetch power factor"<<endl;
 
 }
 
 void Ammeter::startReadTimer()
 {
     readTimer->start(1000);
-
 }
 
 #else

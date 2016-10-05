@@ -11,7 +11,8 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <datapoint.h>
 #include <QTimer>
-#include <QtDebug>
+#include <QDebug>
+
 //#define SIMULATION
 struct instruction
 {
@@ -41,6 +42,7 @@ public:
     explicit Ammeter(QObject *parent = 0);
 //    int readLatestData(DataPoint & data);//return -1 if failed
     DataPoint getData();//get latest data from ammeter
+    bool isAmmeterFound();//电表类是否存在
 private:
     void initPort();
     void initInstruction();
@@ -56,6 +58,7 @@ signals:
     void powerFactorDataGot();
     void getDataOver();
     void ammeterError();
+    void ammeterNotFound();
 
 public slots:
     void parseData();
@@ -82,6 +85,7 @@ private:
     QTimer * readTimer;
     int failureCount;
     float coefficient;
+    bool ammeterfound;
 };
 
 #endif // AMMETER_H

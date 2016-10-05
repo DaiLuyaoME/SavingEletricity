@@ -136,8 +136,8 @@ void HistoryDataWindow::on_pfRadioBtn_toggled(bool checked)
 
 void HistoryDataWindow::replot(int mode,int range)
 {
-    qDebug()<<"call plot************************";
-    qDebug()<<"current mode is "<<mode;
+    //qDebug()<<"call plot************************";
+    //qDebug()<<"current mode is "<<mode;
     for (int i=0;i<4;i++)
     {
         plots[i].graph(0)->clearData();
